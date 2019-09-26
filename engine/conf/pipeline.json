@@ -1,0 +1,43 @@
+{
+  "examples": 
+    {
+        "name": "ReadDataFile",
+        "params": {
+          "path": "data",
+          "fileType":"csv"
+        }
+    }
+  ,
+  "pipelines": {
+    "stages": [
+      {
+        "estimators": [
+          {
+            "name": "StandardScaler",
+            "params": {
+            }
+          },
+          {
+            "name": "IsolationForest",
+            "params": {
+              "outputFeatureName": "isolation_forest",
+              "nTrees": 5
+            }
+          }
+        ]
+      },
+      {
+        "estimators": [
+          {
+            "name": "IsolationForest",
+            "params": {
+              "outputFeatureName": "isolation_forest",
+              "nTrees": 5
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "runExplanations": false
+}
