@@ -3,9 +3,7 @@
 # gen_thrift_file.sh language src_path_for_thrift_file dest_path_folder
 
 # The client has to be built using Apache thrift. In order to build the client,
-# thrift needs a thrift file. If it is being built for java or python, thrift
-# needs the file as-is. If it is being built in scala, it needs an additional
-# line.
+# thrift needs a thrift file.
 #
 # This file uses the template thrift file (that works for the entire project)
 # and adds a line if it is needed for scala.
