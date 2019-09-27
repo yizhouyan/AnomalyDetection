@@ -57,7 +57,7 @@ CREATE TABLE DataFrameColumn (
 );
 CREATE INDEX IF NOT EXISTS DataFrameColumnIndexDfId ON DataFrameColumn(dfId);
 
--- An EventSpec is a machine learning primitive that describes
+-- An EventSpec is a primitive that describes
 -- the hyperparameters used to create a model.
 DROP TABLE IF EXISTS EstimatorSpec;
 CREATE TABLE EstimatorSpec (
@@ -104,7 +104,7 @@ CREATE TABLE Model (
   -- The ExperimentRun that contains this Transformer
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   --  The path to the serialized Transformer
-  filepath TEXT
+  filepath TEXT NOT NULL
 );
 
 -- Describes a Fit Event - Fitting an EstimatorSpec to a DataFrame to
@@ -118,6 +118,8 @@ CREATE TABLE FitEvent (
   model INTEGER REFERENCES Model NOT NULL,
   -- The DataFrame that the Spec is being fitted to
   df INTEGER REFERENCES DataFrame NOT NULL,
+  -- The columns in the input DataFrame that are used by the transformer
+  inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   -- The name of the columns in the DataFrame whose values this Transformer is supposed to predict. We support
   -- multiple label columns.
   labelColumns TEXT NOT NULL,
@@ -141,10 +143,8 @@ CREATE TABLE TransformEvent (
   inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   -- The columns outputted by the Transformer
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
-  -- The names of the output columns that will contain the model's predictions
-  -- There may be multiple columns produced - one predicting the actual data, and the others
-  -- describing additional information, such as confidence
-  predictionColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
+  -- The names of the output column that will contain the model's prediction
+  predictionColumn TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
@@ -192,7 +192,7 @@ CREATE TABLE ModelMetricEvent (
 DROP TABLE IF EXISTS UnsupervisedMetricEvent;
 CREATE TABLE UnsupervisedMetricEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  -- The model being evaluated
+  -- The estimator parameters used to evaluate
   estimatorSpec INTEGER REFERENCES EstimatorSpec NOT NULL,
   -- The DataFrame that the model is being evaluated on
   df INTEGER REFERENCES DataFrame NOT NULL,
