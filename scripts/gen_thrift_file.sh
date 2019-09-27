@@ -23,7 +23,7 @@
 lang=$1
 src_path=$2
 dest_folder=$3
-dest_path="$dest_folder/AnomalyDetection.thrift"
+dest_path="$dest_folder/ModelStorage.thrift"
 
 # Make sure all of the params exist
 if [ -z $1 ] && [ -z $2 ] && [ -z $3 ]; then

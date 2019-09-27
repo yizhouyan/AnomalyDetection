@@ -40,7 +40,6 @@ struct Project {
   project: The id of the project that contains this run.
   description: User assigned text to this experiment run. Can be used to summarize
     data, method, etc.
-  jsonConfig: json config file, used to run the experiment
   sha: Commit hash of the code used in the current run.
   created: Timestamp for when the ExperimentRun was created.
 */
@@ -48,9 +47,8 @@ struct ExperimentRun {
   1: i32 id = -1,
   2: i32 project,
   3: string description,
-  4: string jsonConfig,
-  5: optional string sha,
-  6: optional string created
+  4: optional string sha,
+  5: optional string created
 }
 
 /*

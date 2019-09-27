@@ -34,7 +34,6 @@ public class ExperimentRunDao {
         erRec.setId(er.id < 0 ? null : er.id);
         erRec.setProject(er.project);
         erRec.setDescription(er.description);
-        erRec.setJsonconfig(er.jsonConfig);
         erRec.setCreated(new Timestamp((new Date()).getTime()));
         if (er.isSetSha()) {
             erRec.setSha(er.getSha());
@@ -52,8 +51,7 @@ public class ExperimentRunDao {
         ExperimentRun er = new ExperimentRun(
                 erRec.getId(),
                 erRec.getProject(),
-                erRec.getDescription(),
-                erRec.getJsonconfig()
+                erRec.getDescription()
         );
         er.setSha(erRec.getSha());
         er.setCreated(erRec.getCreated().toString());

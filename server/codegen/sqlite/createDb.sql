@@ -23,8 +23,6 @@ CREATE TABLE ExperimentRun (
   project INTEGER REFERENCES Project NOT NULL,
   -- A description of this particular run, with the goals and parameters it used.
   description TEXT,
-  -- Json string that used to run the experiment
-  jsonConfig TEXT,
   -- A timestamp indicating the time at which this experiment run was created.
   sha TEXT,
   -- Commit hash of the code for this run
@@ -217,5 +215,17 @@ CREATE TABLE Event (
   -- executed together.
   stageNumber INTEGER NOT NULL,
   -- The Experiment Run that contains this Event
+  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
+);
+
+-- Describes a Pipeline Event - Describe the json file and produced final results
+DROP TABLE IF EXISTS PipelineEvent;
+CREATE TABLE PipelineEvent (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  -- Json string that used to run the experiment
+  jsonConfig TEXT,
+  -- The DataFrame that finally produced by the json file
+  newDf INTEGER REFERENCES DataFrame NOT NULL,
+  -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
