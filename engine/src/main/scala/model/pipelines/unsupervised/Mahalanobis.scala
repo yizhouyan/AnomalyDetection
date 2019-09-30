@@ -4,6 +4,8 @@ import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import model.common._
 
+import scala.collection.mutable
+
 /**
   * Created by yizhouyan on 9/7/19.
   */
@@ -17,4 +19,8 @@ class Mahalanobis(mahalanobisParams: MahalanobisParams) extends AbstractTransfor
         println("In Mahalanobis Class")
 
     }
+
+    override def getName(): String = ???
+
+    override def getHyperParameters(): mutable.Map[Any, Any] = ???
 }

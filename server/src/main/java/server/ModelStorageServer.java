@@ -4,6 +4,7 @@ import anomalydetection.*;
 import conf.ModelStorageConfig;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
+import server.storage.ExperimentRunDao;
 import server.storage.ProjectDao;
 import util.ContextFactory;
 import util.ExceptionWrapper;
@@ -98,27 +99,17 @@ public class ModelStorageServer implements ModelStorageService.Iface {
     }
 
     @Override
-    public PipelineEventResponse storePipelineEvent(PipelineEvent pipelineEvent) throws ServerLogicException, TException {
-        return null;
-    }
-
-    @Override
     public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws ServerLogicException, TException {
         return ExceptionWrapper.run(() -> ProjectDao.store(pr, ctx));
     }
 
     @Override
     public ExperimentRunEventResponse storeExperimentRunEvent(ExperimentRunEvent er) throws ServerLogicException, TException {
-        return null;
+        return ExceptionWrapper.run(() -> ExperimentRunDao.store(er, ctx));
     }
 
     @Override
     public ProjectExperimentsAndRuns getRunsAndExperimentsInProject(int projId) throws ServerLogicException, TException {
-        return null;
-    }
-
-    @Override
-    public List<TransformEventResponse> storePipelineTransformEvent(List<TransformEvent> te) throws InvalidExperimentRunException, ServerLogicException, TException {
         return null;
     }
 }

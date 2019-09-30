@@ -5,6 +5,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import model.common._
 import org.apache.spark.sql.functions._
 
+import scala.collection.mutable
+
 /**
   * Created by yizhouyan on 9/7/19.
   */
@@ -46,4 +48,8 @@ class StandardScaler(standardScalerParams: StandardScalerParams) extends Abstrac
         spark.sqlContext.sql("select AVG(dense['duration']) from features").show(5)
 
     }
+
+    override def getName(): String = ???
+
+    override def getHyperParameters(): mutable.Map[Any, Any] = ???
 }

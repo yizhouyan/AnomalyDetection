@@ -185,7 +185,8 @@ struct FitEvent {
   3: Model model,
   4: list<string> featureColumns,
   5: list<string> labelColumns,
-  6: i32 experimentRunId
+  6: i32 experimentRunId,
+  7: optional i32 stageNumber
 }
 
 /*
@@ -223,7 +224,8 @@ struct TransformEvent {
   4: list<string> inputColumns,
   5: list<string> outputColumns,
   6: string predictionColumn,
-  7: i32 experimentRunId
+  7: i32 experimentRunId,
+  8: optional i32 stageNumber
 }
 
 /*
@@ -262,7 +264,8 @@ struct UnsupervisedEvent {
   4: list<string> inputColumns,
   5: list<string> outputColumns,
   6: string predictionColumn,
-  7: i32 experimentRunId
+  7: i32 experimentRunId,
+  8: optional i32 stageNumber
 }
 
 /*
@@ -362,68 +365,6 @@ struct UnsupervisedMetricEventResponse {
 struct ProjectExperimentsAndRuns {
   1: i32 projId,
   2: list<ExperimentRun> experimentRuns
-}
-
-/*
-  This represents a transformation that occurs in the fitting of a pipeline.
-
-  stageNumber: Which stage this transformation occurs at in the pipeline.
-  te: The TransformEvent to apply at this stage.
-*/
-struct PipelineTransformStage {
-  1: i32 stageNumber,
-  2: TransformEvent te
-}
-
-/*
-  This represents a fitting that occurs in the overall fitting of a pipeline.
-
-  stageNumber: Which stage this transformation occurs at in the pipeline.
-  fe: The FitEvent to apply at this stage.
-*/
-struct PipelineFitStage {
-  1: i32 stageNumber,
-  2: FitEvent fe
-}
-
-/*
-  This represents a fitting that occurs in the overall fitting of a pipeline.
-
-  stageNumber: Which stage this transformation occurs at in the pipeline.
-  fe: The UnsupervisedEvent to apply at this stage.
-*/
-struct PipelineUnsupervisedStage {
-  1: i32 stageNumber,
-  2: UnsupervisedEvent ue
-}
-
-/*
-  This represents the fitting of a PipelineModel.
-
-  pipelineFit: This is the overall fit of the PipelineModel.
-  transformStages: These are all the transformations that occurred during the fitting of the PipelineModel.
-  fitStages: These are all the fittings that occurred during the fitting of the PipelineModel.
-  unsupervisedStages: These are all the unsupervised learnings of the Pipeline.
-  experimentRunId: The id of the experiment run that contains this event.
-*/
-struct PipelineEvent {
-  1: list<PipelineTransformStage> transformStages,
-  2: list<PipelineFitStage> fitStages,
-  3: list<PipelineUnsupervisedStage> unsupervisedStages,
-  4: i32 experimentRunId
-}
-
-/*
-  The response given to the creation of a PipelineEvent
-
-  pipelineFitReponse: The response to the fitting of the overall PipelineModel.
-  transformStagesResponses: The responses to each of the transform stages.
-  fitStagesResponses: The responses to each of the fit stages.
-*/
-struct PipelineEventResponse {
-  1: list<TransformEventResponse> transformStagesResponses,
-  2: list<FitEventResponse> fitStagesResponses,
-  3: list<UnsupervisedEventResponse> unsupervisedStagesResponses
 }
 
 /*
@@ -548,17 +489,6 @@ service ModelStorageService {
       throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
   /*
-   Stores a PipelineEvent in the database. This indicates that a pipeline model was created by passing through
-   a linear chain of Transformers and TransformerSpecs, where Transformers transform their input and feed it to the next
-   step of the pipeline and where TransformerSpecs are trained on their input DataFrame and their resulting output
-   Transformer transforms the input DataFrame and passes it through.
-
-   pipelineEvent: The PipelineEvent.
-   */
-  PipelineEventResponse storePipelineEvent(1: PipelineEvent pipelineEvent)
-    throws (1: ServerLogicException svEx),
-
-  /*
    Stores a ProjectEvent in the database. This indicates that a new project was created and stored in the database.
 
    pr: The ProjectEvent.
@@ -581,28 +511,6 @@ service ModelStorageService {
    projId: The ID of a project.
    */
   ProjectExperimentsAndRuns getRunsAndExperimentsInProject(1: i32 projId) throws (1: ServerLogicException svEx),
-
-  /*
-    An N stage pipeline will store N TransformEvents when it transforms a
-    DataFrame. So, the client can make N calls to storeTransformEvent. However,
-    N can be very large. For example, consider a pre-processing pipeline that
-    does string indexing and one-hot encoding for 20 features. This would result
-    in N = 2*20 = 40, which means the client has to make 40 calls to
-    storeTransformEvent. This means the client has to wait for 40 round trip
-    times at least. Notice that this operation cannot be parallelized either,
-    because the first stage's TransformEvent must be stored in order to store
-    the second stage's TransformEvent (because the ID of the DataFrame output
-    by the first stage must equal the ID of the DataFrame input to the second
-    stage).
-
-    To mitigate the performance issue described above,
-    storePipelineTransformEvent allows the client to store all N stages of
-    transformation at once.
-
-    te: The transform events that are involved in this overall pipeline transform event.
-  */
-  list<TransformEventResponse> storePipelineTransformEvent(1: list<TransformEvent> te)
-    throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 }
 
 

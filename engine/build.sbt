@@ -18,3 +18,7 @@ libraryDependencies += "com.twitter" %% "scrooge-core" % "4.12.0" exclude("com.t
 libraryDependencies += "com.twitter" %% "finagle-thrift" % "6.36.0" exclude("com.twitter", "libthrift")
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
+
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+parallelExecution in test := false

@@ -4,6 +4,8 @@ import model.common.Feature
 import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
+import scala.collection.mutable
+
 /**
   * Created by yizhouyan on 9/7/19.
   */
@@ -15,5 +17,12 @@ class KNNBasedDetection(kNNBasedDetectionParams: KNNBasedDetectionParams) extend
                            spark: SparkSession,
                            model_params: Option[Any] = None): Unit = {
         println("In KNN-Based Class")
+    }
+
+    override def getName(): String = "KNN based detection"
+
+    override def getHyperParameters(): mutable.Map[Any, Any] = {
+        var params = mutable.Map[Any, Any]()
+        params
     }
 }
