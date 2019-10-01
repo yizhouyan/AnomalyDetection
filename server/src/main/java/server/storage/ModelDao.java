@@ -53,63 +53,6 @@ public class ModelDao {
     }
 
     /**
-     * Create or fetch the filepath to the serialized model file of the given Transformer.
-     * @param t - The Transformer. The ID should be -1 if you want to create a new Transformer. It should be positive
-     *          if you want to refer to an existing Transformer.
-     * @param experimentRunId - The experiment run that contains the given Transformer.
-     * @param desiredFilename - The desired filename (note that this is NOT the same thing as the filepath, because
-     *                        a filepath = prefix + filename). If this Transformer does not already have a filepath and if
-     *                        there's no file with this name, then this name will be used in the filepath for the
-     *                        Transformer. If this Transformer does not have a filepath, but the filename is already
-     *                        taken, then a random UUID will be appended to this filename, and the result will be
-     *                        used as the filename for the serialized Transformer. If the Transformer already has
-     *                        a filepath, then this argument is ignored.
-     * @param ctx - The database context.
-     * @return The filepath to where the serialized Transformer should be stored.
-     * @throws ResourceNotFoundException - Thrown if there is no Transformer in the database that has the ID t.id.
-     */
-    public static String getFilePath(Model t,
-                                     int experimentRunId,
-                                     String desiredFilename,
-                                     DSLContext ctx) throws ResourceNotFoundException {
-        // If the ID is postive, then ensure that the Transformer exists in the database.
-        if (t.id > 0 && !exists(t.id, ctx)) {
-            throw new ResourceNotFoundException(String.format(
-                    "Cannot fetch or create a filepath for Transformer %d because it does not exist",
-                    t.id
-            ));
-        }
-
-        // Ensure that the Transformer is stored.
-        ModelRecord rec = store(t, experimentRunId, ctx);
-
-        // Check if the Transforomer has a filepath.
-        boolean hasFilepath = rec.getFilepath() != null && rec.getFilepath().length() > 0;
-
-        // Generate a filepath.
-        String newFilepath = generateFilepath();
-
-        // If a desired filename is given...
-        if (desiredFilename != null && desiredFilename.length() > 0) {
-            // Check if there's already uses this filename. If so, then append a random UUID to the filename. Otherwise,
-            // use the filename as-is.
-            if (filePathExists(Paths.get(ModelStorageConfig.getInstance().fsPrefix, desiredFilename).toString(), ctx)) {
-                newFilepath = Paths.get(ModelStorageConfig.getInstance().fsPrefix,
-                        desiredFilename + UUID.randomUUID().toString()).toString();
-            } else {
-                newFilepath = Paths.get(ModelStorageConfig.getInstance().fsPrefix, desiredFilename).toString();
-            }
-        }
-        // Set the filepath (or leave it unchanged if one already exists).
-        rec.setFilepath(hasFilepath ? rec.getFilepath() : newFilepath);
-
-        // Store the Transformer with the correct filepath and return the filepath.
-        rec.store();
-        rec.getId();
-        return rec.getFilepath();
-    }
-
-    /**
      * Check if there exists a Transformer with the given ID.
      * @param id - The ID to check.
      * @param ctx - The database context.

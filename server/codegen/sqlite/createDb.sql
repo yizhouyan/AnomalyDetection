@@ -81,11 +81,6 @@ CREATE TABLE HyperParameter (
   paramType VARCHAR(40) NOT NULL,
   -- The value assigned to this hyperparameter
   paramValue TEXT NOT NULL,
-  -- The minimum value allowed to be assigned to this hyperparameter
-  -- Leave Min and Max NULL for non-numerical hyperparameters
-  paramMinValue FLOAT,
-  -- The maximum value allowed for this hyperparameter
-  paramMaxValue FLOAT,
   -- The ExperimentRun that contains this hyperparameter
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
@@ -223,17 +218,5 @@ CREATE TABLE Event (
   -- executed together.
   stageNumber INTEGER NOT NULL,
   -- The Experiment Run that contains this Event
-  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
-);
-
--- Describes a Pipeline Event - Describe the json file and produced final results
-DROP TABLE IF EXISTS PipelineEvent;
-CREATE TABLE PipelineEvent (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  -- Json string that used to run the experiment
-  jsonConfig TEXT,
-  -- The DataFrame that finally produced by the json file
-  newDf INTEGER REFERENCES DataFrame NOT NULL,
-  -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );

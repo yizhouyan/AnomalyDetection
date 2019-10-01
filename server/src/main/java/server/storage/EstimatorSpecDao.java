@@ -45,8 +45,6 @@ public class EstimatorSpecDao {
             hpRec.setParamname(hp.name);
             hpRec.setParamtype(hp.type);
             hpRec.setParamvalue(hp.value);
-            hpRec.setParamminvalue(Double.valueOf(hp.min).floatValue());
-            hpRec.setParammaxvalue(Double.valueOf(hp.max).floatValue());
             hpRec.setExperimentrun(experimentId);
             hpRec.store();
             hpRec.getId();
@@ -72,10 +70,8 @@ public class EstimatorSpecDao {
                 .map(hp -> new HyperParameter(
                         hp.getParamname(),
                         hp.getParamvalue(),
-                        hp.getParamtype(),
-                        hp.getParamminvalue() == null ? 0 : hp.getParamminvalue(),
-                        hp.getParammaxvalue() == null ? Float.MAX_VALUE : hp.getParammaxvalue())
-                );
+                        hp.getParamtype()
+                ));
 
         if (rec == null) {
             throw new ResourceNotFoundException(String.format(

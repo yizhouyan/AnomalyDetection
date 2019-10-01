@@ -87,15 +87,11 @@ struct DataFrame {
   name: The name of this hyperparameter.
   value: The value assigned to this hyperparameter.
   type: The type of data stored in the hyperparameter (e.g. Integer, String).
-  min: (for numeric hyperparameters only) The minimum value allowed for this hyperparameter.
-  max: (for numeric hyperparameters only) The maximum value allowed for this hyperparameter.
 */
 struct HyperParameter {
   1: string name,
   2: string value,
-  3: string type,
-  4: double min,
-  5: double max
+  3: string type
 }
 
 /*
@@ -444,31 +440,6 @@ service ModelStorageService {
      */
   UnsupervisedMetricEventResponse storeUnsupervisedMetricEvent(1: UnsupervisedMetricEvent ume)
       throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
-
-  /*
-   Gets the filepath associated with the given Transformer.
-
-   If the Transformer exists (t.id > 0 and there's a Transformer with the
-   given ID), then we will generate a filepath for it (unless a filepath
-   already exists) and return the filepath. In this case, we only access the
-   t.id field, so you can leave the other fields and the experimentRunId empty.
-
-   If the Transformer does not exist (t.id > 0 and there's no Transformer
-   with the given ID), then we will throw a ResourceNotFoundException. In
-   this case, we only access the t.id field, so you can leave the other
-   fields and the experimentRunId empty.
-
-   If the Transformer has t.id < 0, then a new Transformer will be created,
-   given a filepath, and that filepath will be returned.
-
-   You can specify a filename as well. This will be ignored if the Transformer
-   already has a filename. Otherwise, your Transformer will be saved at this
-   filename. If there's already a Transformer at the given filename, some
-   random characters will be added to your filename to prevent conflict. Set
-   filename to the empty string if you want a randomly generated filename.
-   */
-  string getFilePath(1: Model t, 2: i32 experimentRunId, 3: string filename)
-    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
 
   /*
    Stores a TransformEvent in the database. This indicates that a Transformer was used to create an output DataFrame

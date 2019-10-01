@@ -1,7 +1,7 @@
 package client.event
 
 import anomalydetection.ModelStorageService.FutureIface
-import client.{IEvent, ModelStorageSyncer, SyncableDataFrame, SyncableModel}
+import client._
 import com.twitter.util.Await
 import org.apache.spark.sql.DataFrame
 
@@ -16,13 +16,12 @@ import org.apache.spark.sql.DataFrame
   * @param predictionCol - Column name that contains the prediction results
   * @param stageNum - Stage number (optional)
   */
-case class TransformEvent(transformer: IEvent,
+case class TransformEvent(transformer: IModel,
                           inputDataframe: DataFrame,
                           outputDataframe: DataFrame,
                           inputCols: List[String],
                           outputCols: List[String],
                           predictionCol: String,
-                          outputFilePath: String,
                           stageNum:Int
                          ) extends ModelStorageEvent {
     /**
@@ -33,7 +32,7 @@ case class TransformEvent(transformer: IEvent,
     def makeEvent(mdbs: ModelStorageSyncer) = anomalydetection.TransformEvent(
         SyncableDataFrame(inputDataframe),
         SyncableDataFrame(outputDataframe),
-        SyncableModel(transformer, outputFilePath),
+        SyncableModel(transformer),
         inputCols,
         outputCols,
         predictionCol,

@@ -17,9 +17,7 @@ object SyncableEstimator {
             // Note that a transformer spec should override the bounds [Float.MinValue, Float.MaxValue] as appropriate.
             anomalydetection.HyperParameter(pair._1.toString,
                 pair._2.toString,
-                pair._2.getClass.getSimpleName,
-                Float.MinValue,
-                Float.MaxValue)
+                pair._2.getClass.getSimpleName)
         }
     }
 

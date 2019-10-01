@@ -2,12 +2,10 @@ package server;
 
 import anomalydetection.*;
 import conf.ModelStorageConfig;
+import jooq.sqlite.gen.tables.records.DataframeRecord;
 import org.apache.thrift.TException;
 import org.jooq.DSLContext;
-import server.storage.ExperimentRunDao;
-import server.storage.ProjectDao;
-import server.storage.TransformEventDao;
-import server.storage.UnsupervisedEventDao;
+import server.storage.*;
 import util.ContextFactory;
 import util.ExceptionWrapper;
 
@@ -62,17 +60,20 @@ public class ModelStorageServer implements ModelStorageService.Iface {
 
     @Override
     public int storeDataFrame(DataFrame df, int experimentRunId) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return 0;
+        return ExceptionWrapper.run(experimentRunId, ctx, () -> {
+            DataframeRecord dfr = DataFrameDao.store(df, experimentRunId, ctx);
+            return dfr.getId();
+        });
     }
 
     @Override
     public String pathForModel(int modelId) throws ResourceNotFoundException, InvalidFieldException, ServerLogicException, TException {
-        return null;
+        return ExceptionWrapper.run(() -> ModelDao.path(modelId, ctx));
     }
 
     @Override
     public FitEventResponse storeFitEvent(FitEvent fe) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
+        return ExceptionWrapper.run(fe.experimentRunId, ctx, () -> FitEventDao.store(fe, ctx));
     }
 
     @Override
@@ -82,11 +83,6 @@ public class ModelStorageServer implements ModelStorageService.Iface {
 
     @Override
     public UnsupervisedMetricEventResponse storeUnsupervisedMetricEvent(UnsupervisedMetricEvent ume) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
-    }
-
-    @Override
-    public String getFilePath(Model t, int experimentRunId, String filename) throws ResourceNotFoundException, ServerLogicException, TException {
         return null;
     }
 
