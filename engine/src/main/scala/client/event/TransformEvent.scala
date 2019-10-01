@@ -23,7 +23,7 @@ case class TransformEvent(transformer: IEvent,
                           outputCols: List[String],
                           predictionCol: String,
                           outputFilePath: String,
-                          stageNum: Option[Int]
+                          stageNum:Int
                          ) extends ModelStorageEvent {
     /**
       * Create the actual TransformEvent.

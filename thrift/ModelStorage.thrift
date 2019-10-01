@@ -186,7 +186,7 @@ struct FitEvent {
   4: list<string> featureColumns,
   5: list<string> labelColumns,
   6: i32 experimentRunId,
-  7: optional i32 stageNumber
+  7: i32 stageNumber
 }
 
 /*
@@ -225,7 +225,7 @@ struct TransformEvent {
   5: list<string> outputColumns,
   6: string predictionColumn,
   7: i32 experimentRunId,
-  8: optional i32 stageNumber
+  8: i32 stageNumber
 }
 
 /*
@@ -265,7 +265,7 @@ struct UnsupervisedEvent {
   5: list<string> outputColumns,
   6: string predictionColumn,
   7: i32 experimentRunId,
-  8: optional i32 stageNumber
+  8: i32 stageNumber
 }
 
 /*

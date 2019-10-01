@@ -7,6 +7,7 @@ import org.jooq.DSLContext;
 import server.storage.ExperimentRunDao;
 import server.storage.ProjectDao;
 import server.storage.TransformEventDao;
+import server.storage.UnsupervisedEventDao;
 import util.ContextFactory;
 import util.ExceptionWrapper;
 
@@ -95,8 +96,8 @@ public class ModelStorageServer implements ModelStorageService.Iface {
     }
 
     @Override
-    public UnsupervisedEventResponse storeUnsupervisedEvent(UnsupervisedEvent te) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
+    public UnsupervisedEventResponse storeUnsupervisedEvent(UnsupervisedEvent ue) throws InvalidExperimentRunException, ServerLogicException, TException {
+        return ExceptionWrapper.run(ue.experimentRunId, ctx, () -> UnsupervisedEventDao.store(ue, ctx));
     }
 
     @Override

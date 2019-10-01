@@ -61,10 +61,11 @@ public class TransformEventDao {
         teRec.setInputcolumns(te.inputColumns.stream().collect(Collectors.joining(",")));
         teRec.setOutputcolumns(te.outputColumns.stream().collect(Collectors.joining(",")));
         teRec.setPredictioncolumn(te.predictionColumn);
+        teRec.setStagenumber(te.stageNumber);
         teRec.store();
 
         // Store an entry in the Event table.
-        EventRecord ev = EventDao.store(teRec.getId(), "transform", te.experimentRunId, ctx);
+        EventRecord ev = EventDao.store(teRec.getId(), "transform", te.experimentRunId, te.getStageNumber(), ctx);
 
         return new TransformEventResponse(inputDf.getId(), outputDf.getId(), t.getId(), ev.getId(), teRec.getId());
     }
@@ -101,6 +102,7 @@ public class TransformEventDao {
                 Tables.TRANSFORMEVENT.OUTPUTCOLUMNS,
                 Tables.TRANSFORMEVENT.EXPERIMENTRUN,
                 Tables.TRANSFORMEVENT.PREDICTIONCOLUMN,
+                Tables.TRANSFORMEVENT.STAGENUMBER,
                 Tables.MODEL.ID,
                 Tables.MODEL.MODELTYPE,
                 Tables.MODEL.TAG,
@@ -121,7 +123,6 @@ public class TransformEventDao {
                             rec.get(oldDfTable.TAG),
                             rec.get(oldDfTable.FILEPATH)
                     );
-                    oldDf.setFilepath(rec.get(oldDfTable.FILEPATH));
 
                     // Construct an object to represent the output DataFrame.
                     DataFrame newDf = new DataFrame(
@@ -130,7 +131,6 @@ public class TransformEventDao {
                             rec.get(newDfTable.TAG),
                             rec.get(newDfTable.FILEPATH)
                     );
-                    newDf.setFilepath(rec.get(newDfTable.FILEPATH));
 
                     // Construct an object to represent the Transformer.
                     Model model = new Model(
@@ -142,10 +142,12 @@ public class TransformEventDao {
 
                     // Construct the TransformEvent.
                     int expRunId = rec.get(Tables.TRANSFORMEVENT.EXPERIMENTRUN);
+                    String predictCol = rec.get(Tables.TRANSFORMEVENT.PREDICTIONCOLUMN);
+                    int stageNum = rec.get(Tables.TRANSFORMEVENT.STAGENUMBER);
                     List<String> inputCols = Arrays.asList(rec.get(Tables.TRANSFORMEVENT.INPUTCOLUMNS).split(","));
                     List<String> outputCols = Arrays.asList(rec.get(Tables.TRANSFORMEVENT.OUTPUTCOLUMNS).split(","));
                     TransformEvent transformEvent = new TransformEvent(oldDf, newDf, model, inputCols, outputCols,
-                            rec.get(Tables.TRANSFORMEVENT.PREDICTIONCOLUMN),expRunId);
+                            predictCol,expRunId, stageNum);
 
                     // Create the mapping from ID to TransformEvent.
                     int transformEventId = rec.get(Tables.TRANSFORMEVENT.ID);

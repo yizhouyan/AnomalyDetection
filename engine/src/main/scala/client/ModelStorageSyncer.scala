@@ -91,7 +91,7 @@ class ModelStorageSyncer(var hostPortPair: Option[(String, Int)] = Some("localho
     /**
       * This is the Thrift client that is responsible for talking to the Model Storage server.
       */
-    private val client: Option[FutureIface] = hostPortPair match {
+    val client: Option[FutureIface] = hostPortPair match {
         case Some((host, port)) =>  Some(Thrift.client.
                 configured(Transport.Liveness(keepAlive=Some(true),readTimeout = Duration.Top, writeTimeout = Duration.Top)).
                 newIface[ModelStorageService.FutureIface](s"$host:$port"))

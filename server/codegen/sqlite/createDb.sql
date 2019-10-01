@@ -122,7 +122,9 @@ CREATE TABLE FitEvent (
   -- multiple label columns.
   labelColumns TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
-  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
+  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  -- The stageNumber of the event in the pipeline
+  stageNumber INTEGER DEFAULT -1
 );
 CREATE INDEX IF NOT EXISTS FitEventIndexModel ON FitEvent(model);
 
@@ -144,7 +146,9 @@ CREATE TABLE TransformEvent (
   -- The names of the output column that will contain the model's prediction
   predictionColumn TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
-  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
+  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  -- The stageNumber of the event in the pipeline
+  stageNumber INTEGER DEFAULT -1
 );
 CREATE INDEX IF NOT EXISTS TransformEventIndexNewDf ON TransformEvent(newDf);
 CREATE INDEX IF NOT EXISTS TransformEventIndexExperimentRun ON TransformEvent(experimentRun);
@@ -164,8 +168,12 @@ CREATE TABLE UnsupervisedEvent (
   inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   -- The columns outputted by the Transformer
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
+  -- The names of the output column that will contain the model's prediction
+  predictionColumn TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
-  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
+  experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+  -- The stageNumber of the event in the pipeline
+  stageNumber INTEGER DEFAULT -1
 );
 CREATE INDEX IF NOT EXISTS UnsupervisedEventIndexNewDf ON UnsupervisedEvent(newDf);
 CREATE INDEX IF NOT EXISTS UnsupervisedEventIndexExperimentRun ON UnsupervisedEvent(experimentRun);

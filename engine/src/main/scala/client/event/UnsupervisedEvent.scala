@@ -22,7 +22,7 @@ case class UnsupervisedEvent(estimator: IEvent,
                              inputCols: List[String],
                              outputCols: List[String],
                              predictionCol: String,
-                             stageNum: Option[Int]
+                             stageNum: Int
                          ) extends ModelStorageEvent {
   /**
     * Create the actual TransformEvent.
