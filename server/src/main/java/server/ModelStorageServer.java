@@ -6,6 +6,7 @@ import org.apache.thrift.TException;
 import org.jooq.DSLContext;
 import server.storage.ExperimentRunDao;
 import server.storage.ProjectDao;
+import server.storage.TransformEventDao;
 import util.ContextFactory;
 import util.ExceptionWrapper;
 
@@ -90,7 +91,7 @@ public class ModelStorageServer implements ModelStorageService.Iface {
 
     @Override
     public TransformEventResponse storeTransformEvent(TransformEvent te) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
+        return ExceptionWrapper.run(te.experimentRunId, ctx, () -> TransformEventDao.store(te, ctx));
     }
 
     @Override

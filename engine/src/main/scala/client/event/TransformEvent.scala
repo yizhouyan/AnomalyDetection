@@ -25,45 +25,45 @@ case class TransformEvent(transformer: IEvent,
                           outputFilePath: String,
                           stageNum: Option[Int]
                          ) extends ModelStorageEvent {
-  /**
-    * Create the actual TransformEvent.
-    * @param mdbs - The syncer. Used to get the experiment run id.
-    * @return The TransformEvent.
-    */
-  def makeEvent(mdbs: ModelStorageSyncer) = anomalydetection.TransformEvent(
-    SyncableDataFrame(inputDataframe),
-    SyncableDataFrame(outputDataframe),
-    SyncableModel(transformer, outputFilePath),
-    inputCols,
-    outputCols,
-    predictionCol,
-    experimentRunId = mdbs.experimentRun.id,
-    stageNum
-  )
+    /**
+      * Create the actual TransformEvent.
+      * @param mdbs - The syncer. Used to get the experiment run id.
+      * @return The TransformEvent.
+      */
+    def makeEvent(mdbs: ModelStorageSyncer) = anomalydetection.TransformEvent(
+        SyncableDataFrame(inputDataframe),
+        SyncableDataFrame(outputDataframe),
+        SyncableModel(transformer, outputFilePath),
+        inputCols,
+        outputCols,
+        predictionCol,
+        experimentRunId = mdbs.experimentRun.id,
+        stageNum
+    )
 
 
-  /**
-    * Update object ID mappings based on response.
-    * @param ter - The response.
-    * @param mdbs - The syncer. This contains the object ID mappings.
-    * @return The syncer.
-    */
-  def associate(ter: anomalydetection.TransformEventResponse, mdbs: ModelStorageSyncer) = {
-    mdbs.associateObjectAndId(inputDataframe, ter.oldDataFrameId)
-      .associateObjectAndId(outputDataframe, ter.newDataFrameId)
-      .associateObjectAndId(transformer, ter.modelId)
-      .associateObjectAndId(this, ter.eventId)
-  }
+    /**
+      * Update object ID mappings based on response.
+      * @param ter - The response.
+      * @param mdbs - The syncer. This contains the object ID mappings.
+      * @return The syncer.
+      */
+    def associate(ter: anomalydetection.TransformEventResponse, mdbs: ModelStorageSyncer) = {
+        mdbs.associateObjectAndId(inputDataframe, ter.oldDataFrameId)
+                .associateObjectAndId(outputDataframe, ter.newDataFrameId)
+                .associateObjectAndId(transformer, ter.modelId)
+                .associateObjectAndId(this, ter.eventId)
+    }
 
-  /**
-    * Store the event and update object ID mappings.
-    * @param client - The client that exposes the functions that we
-    *               call to store objects in the ModelStorage.
-    * @param mdbs - The ModelStorageSyncer, included so we can update the ID
-    *             mappings after syncing.
-    */
-  override def sync(client: FutureIface, mdbs: Option[ModelStorageSyncer]): Unit = {
-    val res = Await.result(client.storeTransformEvent(makeEvent(mdbs.get)))
-    associate(res, mdbs.get)
-  }
+    /**
+      * Store the event and update object ID mappings.
+      * @param client - The client that exposes the functions that we
+      *               call to store objects in the ModelStorage.
+      * @param mdbs - The ModelStorageSyncer, included so we can update the ID
+      *             mappings after syncing.
+      */
+    override def sync(client: FutureIface, mdbs: Option[ModelStorageSyncer]): Unit = {
+        val res = Await.result(client.storeTransformEvent(makeEvent(mdbs.get)))
+        associate(res, mdbs.get)
+    }
 }
