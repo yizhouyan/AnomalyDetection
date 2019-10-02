@@ -91,4 +91,32 @@ public class ExperimentRunDao {
         }
         return recordToThrift(rec);
     }
+
+    /**
+     * Read all the experiment runs in a given project.
+     * @param projId - The ID of a project.
+     * @param ctx - The database context.
+     * @return The experiment runs in the project with ID projId.
+     */
+    public static ProjectExperimentRuns readExperimentsRunsInProject(int projId, DSLContext ctx) {
+        // Get all the experiment run ID pairs in the project.
+        List<Integer> experimentRunIds = ctx
+                .select(
+                        Tables.EXPERIMENTRUN.ID
+                )
+                .from(Tables.EXPERIMENTRUN)
+                .where(Tables.EXPERIMENTRUN.PROJECT.eq(projId))
+                .fetch()
+                .map(r -> r.value1());
+
+        // Fetch all the experiment runs in the project.
+        List<ExperimentRun> experimentRuns = ctx
+                .selectFrom(Tables.EXPERIMENTRUN)
+                .where(Tables.EXPERIMENTRUN.ID.in(experimentRunIds))
+                .orderBy(Tables.EXPERIMENTRUN.ID.asc())
+                .fetch()
+                .map(rec -> recordToThrift(rec));
+
+        return new ProjectExperimentRuns(projId, experimentRuns);
+    }
 }

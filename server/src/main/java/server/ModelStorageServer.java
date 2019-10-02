@@ -77,13 +77,13 @@ public class ModelStorageServer implements ModelStorageService.Iface {
     }
 
     @Override
-    public ModelMetricEventResponse storeModelMetricEvent(ModelMetricEvent me) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
+    public ModelMetricEventResponse storeModelMetricEvent(ModelMetricEvent mme) throws InvalidExperimentRunException, ServerLogicException, TException {
+        return ExceptionWrapper.run(mme.experimentRunId, ctx, () -> ModelMetricEventDao.store(mme, ctx));
     }
 
     @Override
     public UnsupervisedMetricEventResponse storeUnsupervisedMetricEvent(UnsupervisedMetricEvent ume) throws InvalidExperimentRunException, ServerLogicException, TException {
-        return null;
+        return ExceptionWrapper.run(ume.experimentRunId, ctx, () -> UnsupervisedMetricEventDao.store(ume, ctx));
     }
 
     @Override
@@ -107,7 +107,12 @@ public class ModelStorageServer implements ModelStorageService.Iface {
     }
 
     @Override
-    public ProjectExperimentsAndRuns getRunsAndExperimentsInProject(int projId) throws ServerLogicException, TException {
-        return null;
+    public int compareHyperparameters(int estimatorSpecId1, int estimatorSpecId2) throws TException {
+        return 0;
+    }
+
+    @Override
+    public ProjectExperimentRuns getExperimentRunsInProject(int projId) throws ServerLogicException, TException {
+        return ExceptionWrapper.run(() -> ExperimentRunDao.readExperimentsRunsInProject(projId, ctx));
     }
 }

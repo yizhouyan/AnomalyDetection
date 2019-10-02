@@ -358,7 +358,7 @@ struct UnsupervisedMetricEventResponse {
   projId: The id of the project.
   experimentRuns: The list of experiment runs in the project.
 */
-struct ProjectExperimentsAndRuns {
+struct ProjectExperimentRuns {
   1: i32 projId,
   2: list<ExperimentRun> experimentRuns
 }
@@ -477,11 +477,20 @@ service ModelStorageService {
     throws (1: ServerLogicException svEx),
 
   /*
+     Compares the hyperparameters of the EstimatorSpec.
+
+     estimatorSpecId1: The ID of a EstimatorSpec.
+     estimatorSpecId2: The ID of another EstimatorSpec.
+     */
+  i32 compareHyperparameters(1: i32 estimatorSpecId1, 2: i32 estimatorSpecId2)
+    throws (1: ResourceNotFoundException rnfEx, 2: ServerLogicException svEx),
+
+  /*
    Get information about a project and the experiments/experiment runs that it contains.
 
    projId: The ID of a project.
    */
-  ProjectExperimentsAndRuns getRunsAndExperimentsInProject(1: i32 projId) throws (1: ServerLogicException svEx),
+  ProjectExperimentRuns getExperimentRunsInProject(1: i32 projId) throws (1: ServerLogicException svEx),
 }
 
 
