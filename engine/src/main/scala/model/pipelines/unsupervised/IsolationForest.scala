@@ -9,14 +9,19 @@ import scala.collection.mutable
 /**
   * Created by yizhouyan on 9/7/19.
   */
-case class IsolationForestParams(outputFeatureName: String, nTrees: Int = 100, inputFeatureNames: Option[List[String]] = None)
+case class IsolationForestParams(outputFeatureName: String,
+                                 nTrees: Int = 100,
+                                 inputFeatureNames: Option[List[String]])
 
-class IsolationForest(isolationForestParams: IsolationForestParams)
+class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: Int = -1)
         extends AbstractTransformer{
-    override def transform(features: Dataset[Feature],
+    override def transform(features: DataFrame,
                            runExplanations: Boolean,
-                           spark: SparkSession,
-                           model_params: Option[Any] = None): Unit = {
+                           stageNum: Int = -1,
+                           model_params: Option[Any] = None)
+                          (implicit spark: SparkSession,
+                           saveToDB: Boolean,
+                           finalOutputPath: String): Unit = {
         println("In Isolation Forest Class")
     }
 

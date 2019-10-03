@@ -17,13 +17,13 @@ case class PipelineConfig(stages: List[PipelineStage])
 case class UnsupervisedWorkflowInput(examples: RegistryLookup,
                                      pipelines: PipelineConfig,
                                      runExplanations: Boolean = false,
-                                     finalOutputTable: Option[String] = None)
+                                     finalOutputPath: Option[String] = None)
 
 case class SupervisedWorkflowInput(labeledData: RegistryLookup,
                                    examples: RegistryLookup,
                                    pipelines: PipelineConfig,
                                    runExplanations: Boolean = false,
-                                   finalOutputTable: Option[String] = None)
+                                   finalOutputPath: Option[String] = None)
 
 case class CustomizedFile(path: String, fileType: String)
 

@@ -1,30 +1,34 @@
 package model.workflows
 
+import conf.InputConfigs
 import model.common.utils.MyJsonProtocol._
 import model.common.utils._
 import model.common.{SupervisedWorkflowInput, UnsupervisedWorkflowInput, utils}
 import model.data.{FetchDataExample, FetchLabels}
 import model.pipelines.Pipelines
 import org.apache.spark.SparkConf
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import spray.json._
 import model.common._
+import org.apache.commons.configuration.{CompositeConfiguration, PropertiesConfiguration}
 
 import scala.io.Source
 
 /**
   * Created by yizhouyan on 9/5/19.
   */
-object SupervisedLearning extends Logging{
+object SupervisedLearning{
     def main(args: Array[String]): Unit = {
         val configs: utils.ConfigParser = new ConfigParser(args)
         val supervisedWorkflowInput: SupervisedWorkflowInput = parseJson(configs.jsonFile)
+        val config: CompositeConfiguration = new CompositeConfiguration()
+        config.addConfiguration(new PropertiesConfiguration(configs.confFile))
 
-        val spark = initializeSparkContext()
+        implicit val spark: SparkSession = initializeSparkContext()
         // read data from training
+        implicit val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
         val labeledData = FetchLabels.fetch(supervisedWorkflowInput.labeledData, spark)
-        val examples = FetchDataExample.fetch(supervisedWorkflowInput.examples, spark)
+        val examples = FetchDataExample.fetch(supervisedWorkflowInput.examples)
 
         // execute pipeline stages
         Pipelines.fit(labeledData, examples, supervisedWorkflowInput.pipelines, false)

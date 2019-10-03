@@ -2,6 +2,7 @@ package model.data
 
 import java.io.File
 
+import client.SyncableDataFramePaths
 import model.common.CustomizedFile
 import org.apache.spark.sql.{Column, DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions._
@@ -13,7 +14,7 @@ import model.common.utils._
   */
 
 class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
-    override def fetch(spark: SparkSession): Dataset[Feature] = {
+    override def fetch()(implicit spark: SparkSession, saveToDB: Boolean): DataFrame = {
         println("Create Dataset from file " + customizedFile.path)
         val inputFile: File = new File(customizedFile.path)
         var dataDF: DataFrame = null
@@ -52,8 +53,11 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
         }
         import spark.implicits._
         var mapColumn: Column = map(dataDF.columns.tail.flatMap(name => Seq(lit(name), $"$name")): _*)
-        dataDF.select($"index" as "id", mapColumn as "dense")
+        val newDF: DataFrame = dataDF.select($"index" as "id", mapColumn as "dense")
                 .withColumn("explanations", typedLit(Map.empty[String, String]))
-                .as[Feature]
+        if(saveToDB == true){
+            SyncableDataFramePaths.setPath(newDF, customizedFile.path)
+        }
+        newDF
     }
 }

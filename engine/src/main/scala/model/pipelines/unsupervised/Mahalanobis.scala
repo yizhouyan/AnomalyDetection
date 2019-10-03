@@ -11,11 +11,14 @@ import scala.collection.mutable
   */
 case class MahalanobisParams(k: Int = 10)
 
-class Mahalanobis(mahalanobisParams: MahalanobisParams) extends AbstractTransformer{
-    override def transform(features: Dataset[Feature],
+class Mahalanobis(mahalanobisParams: MahalanobisParams, stageNum: Int = -1) extends AbstractTransformer{
+    override def transform(features: DataFrame,
                            runExplanations: Boolean,
-                           spark: SparkSession,
-                           model_params: Option[Any] = None): Unit = {
+                           stageNum: Int = -1,
+                           model_params: Option[Any] = None)
+                          (implicit spark: SparkSession,
+                           saveToDB: Boolean,
+                           finalOutputPath: String): Unit = {
         println("In Mahalanobis Class")
 
     }

@@ -11,5 +11,9 @@ import scala.collection.mutable
   */
 abstract class AbstractEvent extends IEvent{
     def fit(labels: Dataset[LabeledExamples], features: DataFrame, runExplanations: Boolean): Any
-    def transform(features: Dataset[Feature], runExplanations: Boolean, spark: SparkSession, model_params: Option[Any] = None)
+    def transform(features: DataFrame,
+                  runExplanations: Boolean,
+                  stageNum: Int = -1,
+                  model_params: Option[Any] = None)
+                 (implicit spark: SparkSession, saveToDB: Boolean, finalOutputPath: String)
 }

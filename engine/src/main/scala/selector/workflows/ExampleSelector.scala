@@ -1,7 +1,6 @@
 package selector.workflows
 
 import org.apache.spark.SparkConf
-import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import selector.common.MainWorkflowInput
 import selector.common.utils.ConfigParser
@@ -15,7 +14,7 @@ import selector.labeled_examples.FetchLabeledExample
 /**
   * Created by yizhouyan on 9/7/19.
   */
-object ExampleSelector extends Logging{
+object ExampleSelector{
     def main(args: Array[String]): Unit = {
         val configs: ConfigParser = new ConfigParser(args)
         val mainWorkflowInput: MainWorkflowInput = parseJson(configs.jsonFile)

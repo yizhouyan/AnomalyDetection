@@ -1,13 +1,13 @@
 {
-  "examples": 
-    {
-        "name": "ReadDataFile",
-        "params": {
-          "path": "data",
-          "fileType":"csv"
-        }
+  "examples":
+  {
+    "name": "ReadDataFile",
+    "params": {
+      "path": "data/kdd_09_data_test.csv",
+      "fileType":"csv"
     }
-  ,
+  }
+,
   "pipelines": {
     "stages": [
       {
@@ -25,19 +25,9 @@
             }
           }
         ]
-      },
-      {
-        "estimators": [
-          {
-            "name": "IsolationForest",
-            "params": {
-              "outputFeatureName": "isolation_forest",
-              "nTrees": 5
-            }
-          }
-        ]
       }
     ]
   },
-  "runExplanations": false
+  "runExplanations": false,
+  "finalOutputPath": "results/kdd_09_data_results.csv"
 }

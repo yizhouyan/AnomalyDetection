@@ -57,16 +57,19 @@ object Pipelines {
     def transform(features: Dataset[Feature],
                   pipelines: PipelineConfig,
                   runExplanations: Boolean,
-                  spark: SparkSession,
-                  model_params: Option[List[List[Any]]]=None): Unit = {
+                  model_params: Option[List[List[Any]]]=None)
+                 (implicit spark: SparkSession,
+                  saveToDB: Boolean,
+                  finalOutputPath: String): Unit = {
         // To start off, we create empty features for each example
 
         // lookup all the estimators
         var estimators: List[List[Any]] = List()
-        for (stage <- pipelines.stages){
+        for (i <- 0 until pipelines.stages.length){
+            val stage = pipelines.stages(i)
             var curEstimators: List[Any] = List()
             for (lookup: RegistryLookup <- stage.estimators){
-                curEstimators = curEstimators :+ ClassNameMapping.mapClassNameToClass(lookup)
+                curEstimators = curEstimators :+ ClassNameMapping.mapClassNameToClass(lookup, i)
             }
             estimators = estimators :+ curEstimators
         }
@@ -77,9 +80,12 @@ object Pipelines {
                 transformResults = transformResults :+ estimators(i)(j).asInstanceOf[ {
                     def transform(features: Dataset[Feature],
                                   runExplanations: Boolean,
-                                  spark: SparkSession,
-                                  model_params: Option[Any] = None): Unit
-                }].transform(features, runExplanations, spark)
+                                  stageNum: Int = -1,
+                                  model_params: Option[Any] = None)
+                                 (implicit spark: SparkSession,
+                                  saveToDB: Boolean,
+                                  finalOutputPath: String): Unit
+                }].transform(features, runExplanations, i)
             }
             // combine the outputs of all the estimators in the stage and update the features table so that we can feed
             // into the next stage

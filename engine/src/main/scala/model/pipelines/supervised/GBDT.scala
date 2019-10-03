@@ -14,11 +14,17 @@ class GBDT extends AbstractEvent{
 
     }
 
-    override def transform(features: Dataset[Feature], runExplanations: Boolean, spark: SparkSession, model_params: Option[Any]): Unit = {
+    override def transform(features: DataFrame,
+                           runExplanations: Boolean,
+                           stageNum: Int = -1,
+                           model_params: Option[Any] = None)
+                          (implicit spark: SparkSession,
+                           saveToDB: Boolean,
+                           finalOutputPath: String): Unit = {
 
     }
 
-    override def getName(): String = ???
+    override def getName(): String = "Gradient Boosted Decision Tree"
 
     override def getHyperParameters(): mutable.Map[Any, Any] = ???
 }

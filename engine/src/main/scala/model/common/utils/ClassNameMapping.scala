@@ -18,14 +18,14 @@ object ClassNameMapping {
         }
     }
 
-    def mapClassNameToClass(lookup: RegistryLookup): AbstractEvent = {
+    def mapClassNameToClass(lookup: RegistryLookup, stageNum: Int = -1): AbstractEvent = {
         val jsonAst = lookup.params.mkString.parseJson
         lookup.name match{
-            case "StandardScaler" => new StandardScaler(jsonAst.convertTo[StandardScalerParams])
-            case "IsolationForest" => new IsolationForest(jsonAst.convertTo[IsolationForestParams])
-            case "KNNBasedDetection" => new KNNBasedDetection(jsonAst.convertTo[KNNBasedDetectionParams])
-            case "LOF" => new LOF(jsonAst.convertTo[LOFParams])
-            case "Mahalanobis" => new Mahalanobis(jsonAst.convertTo[MahalanobisParams])
+            case "StandardScaler" => new StandardScaler(jsonAst.convertTo[StandardScalerParams], stageNum)
+            case "IsolationForest" => new IsolationForest(jsonAst.convertTo[IsolationForestParams], stageNum)
+            case "KNNBasedDetection" => new KNNBasedDetection(jsonAst.convertTo[KNNBasedDetectionParams], stageNum)
+            case "LOF" => new LOF(jsonAst.convertTo[LOFParams], stageNum)
+            case "Mahalanobis" => new Mahalanobis(jsonAst.convertTo[MahalanobisParams], stageNum)
         }
     }
 }
