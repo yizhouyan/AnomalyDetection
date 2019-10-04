@@ -1,6 +1,5 @@
 package model.pipelines.unsupervised
 
-import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import model.common._
 
@@ -11,7 +10,7 @@ import scala.collection.mutable
   */
 case class MahalanobisParams(k: Int = 10)
 
-class Mahalanobis(mahalanobisParams: MahalanobisParams, stageNum: Int = -1) extends AbstractTransformer{
+class Mahalanobis(mahalanobisParams: MahalanobisParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo{
     override def transform(features: DataFrame,
                            runExplanations: Boolean,
                            stageNum: Int = -1,

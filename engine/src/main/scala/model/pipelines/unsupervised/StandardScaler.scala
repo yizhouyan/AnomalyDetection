@@ -1,7 +1,6 @@
 package model.pipelines.unsupervised
 
 import client.SyncableDataFramePaths
-import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 import model.common._
 import org.apache.spark.sql.functions._
@@ -25,7 +24,7 @@ case class StandardScalerParams(inputFeatureNames: Option[List[String]] ,
  * This function computes the z-score for each feature.
  * @param standardScalerParams
  */
-class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int = -1) extends AbstractTransformer{
+class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo{
     override def transform(features: DataFrame,
                            runExplanations: Boolean,
                            stageNum: Int = -1,

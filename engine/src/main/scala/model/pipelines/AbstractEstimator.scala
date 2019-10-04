@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by yizhouyan on 9/7/19.
   */
-abstract class AbstractEvent extends IEvent{
+abstract class AbstractEstimator extends IEvent{
     def fit(labels: Dataset[LabeledExamples], features: DataFrame, runExplanations: Boolean): Any
     def transform(features: DataFrame,
                   runExplanations: Boolean,

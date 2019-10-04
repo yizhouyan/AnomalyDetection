@@ -5,7 +5,7 @@ import model.pipelines.unsupervised._
 import spray.json._
 import model.common.utils.MyJsonProtocol._
 import model.data.{AbstractData, ReadDataFile}
-import model.pipelines.AbstractEvent
+import model.pipelines.AbstractEstimator
 
 /**
   * Created by yizhouyan on 9/7/19.
@@ -18,7 +18,7 @@ object ClassNameMapping {
         }
     }
 
-    def mapClassNameToClass(lookup: RegistryLookup, stageNum: Int = -1): AbstractEvent = {
+    def mapClassNameToClass(lookup: RegistryLookup, stageNum: Int = -1): AbstractEstimator = {
         val jsonAst = lookup.params.mkString.parseJson
         lookup.name match{
             case "StandardScaler" => new StandardScaler(jsonAst.convertTo[StandardScalerParams], stageNum)

@@ -1,7 +1,6 @@
 package model.pipelines.unsupervised
 
 import model.common.Feature
-import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
@@ -14,7 +13,7 @@ case class IsolationForestParams(outputFeatureName: String,
                                  inputFeatureNames: Option[List[String]])
 
 class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: Int = -1)
-        extends AbstractTransformer{
+        extends AbstractUnsupervisedAlgo{
     override def transform(features: DataFrame,
                            runExplanations: Boolean,
                            stageNum: Int = -1,

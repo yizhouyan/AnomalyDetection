@@ -1,7 +1,6 @@
 package model.pipelines.unsupervised
 
 import model.common.Feature
-import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
@@ -12,7 +11,7 @@ import scala.collection.mutable
 
 case class LOFParams(k: Int = 10)
 
-class LOF(lofParams: LOFParams, stageNum: Int = -1) extends AbstractTransformer {
+class LOF(lofParams: LOFParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo {
     override def transform(features: DataFrame,
                            runExplanations: Boolean,
                            stageNum: Int = -1,

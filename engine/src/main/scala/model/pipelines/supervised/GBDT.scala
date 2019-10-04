@@ -1,7 +1,7 @@
 package model.pipelines.supervised
 
 import model.common.{Feature, LabeledExamples}
-import model.pipelines.AbstractEvent
+import model.pipelines.AbstractEstimator
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
@@ -9,7 +9,7 @@ import scala.collection.mutable
 /**
   * Created by yizhouyan on 9/7/19.
   */
-class GBDT extends AbstractEvent{
+class GBDT extends AbstractSupervisedAlgo{
     override def fit(labels: Dataset[LabeledExamples], features: DataFrame, runExplanations: Boolean): Any = {
 
     }

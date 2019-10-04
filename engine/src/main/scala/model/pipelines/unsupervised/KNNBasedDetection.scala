@@ -1,7 +1,6 @@
 package model.pipelines.unsupervised
 
 import model.common.Feature
-import model.pipelines.AbstractTransformer
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
@@ -11,7 +10,7 @@ import scala.collection.mutable
   */
 case class KNNBasedDetectionParams(k: Int = 10)
 
-class KNNBasedDetection(kNNBasedDetectionParams: KNNBasedDetectionParams, stageNum: Int = -1) extends AbstractTransformer{
+class KNNBasedDetection(kNNBasedDetectionParams: KNNBasedDetectionParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo{
     override def transform(features: DataFrame,
                            runExplanations: Boolean,
                            stageNum: Int = -1,
