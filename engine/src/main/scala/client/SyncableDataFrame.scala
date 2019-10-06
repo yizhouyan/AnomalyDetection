@@ -1,6 +1,6 @@
 package client
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
   * Created by yizhouyan on 9/30/19.
@@ -12,7 +12,7 @@ object SyncableDataFrame {
       * @param mdbs - The syncer (used for the id mapping).
       * @return An anomalydetection.DataFrame representing the Spark DataFrame.
       */
-    def apply(df: DataFrame)(implicit mdbs: Option[ModelStorageSyncer]): anomalydetection.DataFrame = {
+    def apply(df: Dataset[_])(implicit mdbs: Option[ModelStorageSyncer]): anomalydetection.DataFrame = {
         val id = mdbs.get.id(df).getOrElse(-1)
         val tag = mdbs.get.tag(df).getOrElse("")
 
@@ -20,7 +20,7 @@ object SyncableDataFrame {
         val columns = if (id != -1) {
             Seq[anomalydetection.DataFrameColumn]()
         } else {
-            df.schema.map(field => anomalydetection.DataFrameColumn(field.name, field.dataType.simpleString))
+            df.toDF().schema.map(field => anomalydetection.DataFrameColumn(field.name, field.dataType.simpleString))
         }
 
         val modeldbDf = anomalydetection.DataFrame(

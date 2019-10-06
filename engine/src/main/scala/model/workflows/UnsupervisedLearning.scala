@@ -2,7 +2,7 @@ package model.workflows
 
 import client.{ModelStorageSyncer, NewExperimentRun, NewOrExistingProject, SyncableDataFramePaths}
 import conf.InputConfigs
-import model.common.{UnsupervisedWorkflowInput, utils}
+import model.common.{SharedParams, UnsupervisedWorkflowInput, utils}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import model.common.utils._
@@ -34,21 +34,24 @@ object UnsupervisedLearning{
             ),
             experimentRunConfig = new NewExperimentRun
         ))
-        implicit val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
+
+        val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
         implicit val spark: SparkSession = initializeSparkContext()
-        implicit val finalOutputPath: String = unsupervisedWorkflowInput.finalOutputPath match {
+        val finalOutputPath: String = unsupervisedWorkflowInput.finalOutputPath match {
             case Some(x) => x
             case None => Utils.getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
         }
+        val runExplanations: Boolean = unsupervisedWorkflowInput.runExplanations
+        implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
+
         // read data from training
-        val data = FetchDataExample.fetch(unsupervisedWorkflowInput.examples)
+        val data = FetchDataExample.fetch(unsupervisedWorkflowInput.data)
         println(SyncableDataFramePaths.getPath(data))
         import spark.implicits._
         // execute pipeline stages
         Pipelines.transform(
             data,
-            unsupervisedWorkflowInput.pipelines,
-            false
+            unsupervisedWorkflowInput.pipelines
         )
         spark.stop()
     }

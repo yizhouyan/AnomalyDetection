@@ -2,14 +2,13 @@ package model.pipelines
 
 import model.common.utils.ClassNameMapping
 import model.common._
-import model.pipelines.unsupervised.{IsolationForest, IsolationForestParams}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
   * Created by yizhouyan on 9/7/19.
   */
 object Pipelines {
-    def fit(labels: Dataset[LabeledExamples],
+    def fit(labels: Dataset[LabeledData],
             features: Dataset[Feature],
             pipelines: PipelineConfig,
             runExplanations: Boolean): Unit = {
@@ -32,7 +31,7 @@ object Pipelines {
             for (j <- 0 until pipelines.stages(i).estimators.length){
                 curModelParams = curModelParams :+
                         estimators(i)(j).asInstanceOf[ {
-                            def fit(labels: Dataset[LabeledExamples],
+                            def fit(labels: Dataset[LabeledData],
                                     features: Dataset[Feature],
                                     runExplanations: Boolean): Any
                         }].fit(labels, features, runExplanations)
@@ -54,15 +53,12 @@ object Pipelines {
         }
     }
 
-    def transform(features: Dataset[Feature],
+    def transform(inputFeatures: Dataset[Feature],
                   pipelines: PipelineConfig,
-                  runExplanations: Boolean,
                   model_params: Option[List[List[Any]]]=None)
                  (implicit spark: SparkSession,
-                  saveToDB: Boolean,
-                  finalOutputPath: String): Unit = {
-        // To start off, we create empty features for each example
-
+                  sharedParams:SharedParams): Unit = {
+        var features: Dataset[Feature] = inputFeatures
         // lookup all the estimators
         var estimators: List[List[Any]] = List()
         for (i <- 0 until pipelines.stages.length){
@@ -75,20 +71,15 @@ object Pipelines {
         }
 
         for (i <- 0 until pipelines.stages.length){
-            var transformResults: List[Any] = List()
             for (j <- 0 until pipelines.stages(i).estimators.length){
-                transformResults = transformResults :+ estimators(i)(j).asInstanceOf[ {
+                features = estimators(i)(j).asInstanceOf[ {
                     def transform(features: Dataset[Feature],
-                                  runExplanations: Boolean,
                                   stageNum: Int = -1,
                                   model_params: Option[Any] = None)
                                  (implicit spark: SparkSession,
-                                  saveToDB: Boolean,
-                                  finalOutputPath: String): Unit
-                }].transform(features, runExplanations, i)
+                                  sharedParams:SharedParams): Dataset[Feature]
+                }].transform(features, i)
             }
-            // combine the outputs of all the estimators in the stage and update the features table so that we can feed
-            // into the next stage
         }
     }
 }

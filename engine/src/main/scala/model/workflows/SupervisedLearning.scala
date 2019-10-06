@@ -10,6 +10,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import spray.json._
 import model.common._
+import model.utils.Utils
 import org.apache.commons.configuration.{CompositeConfiguration, PropertiesConfiguration}
 
 import scala.io.Source
@@ -26,9 +27,16 @@ object SupervisedLearning{
 
         implicit val spark: SparkSession = initializeSparkContext()
         // read data from training
-        implicit val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
+        val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
+        val runExplanations: Boolean = supervisedWorkflowInput.runExplanations
+        val finalOutputPath: String = supervisedWorkflowInput.finalOutputPath match {
+            case Some(x) => x
+            case None => Utils.getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
+        }
+        implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
+
         val labeledData = FetchLabels.fetch(supervisedWorkflowInput.labeledData, spark)
-        val examples = FetchDataExample.fetch(supervisedWorkflowInput.examples)
+        val examples = FetchDataExample.fetch(supervisedWorkflowInput.data)
 
         // execute pipeline stages
         Pipelines.fit(labeledData, examples, supervisedWorkflowInput.pipelines, false)

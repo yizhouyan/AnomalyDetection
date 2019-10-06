@@ -1,7 +1,8 @@
-package model.pipelines.unsupervised
+package model.pipelines.unsupervised.examples
 
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import model.common._
+import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.mutable
 
@@ -11,15 +12,13 @@ import scala.collection.mutable
 case class MahalanobisParams(k: Int = 10)
 
 class Mahalanobis(mahalanobisParams: MahalanobisParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo{
-    override def transform(features: DataFrame,
-                           runExplanations: Boolean,
+    override def transform(features: Dataset[Feature],
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           saveToDB: Boolean,
-                           finalOutputPath: String): Unit = {
+                           sharedParams:SharedParams): Dataset[Feature] = {
         println("In Mahalanobis Class")
-
+        features
     }
 
     override def getName(): String = ???

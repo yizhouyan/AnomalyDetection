@@ -14,7 +14,7 @@ import model.common.utils._
   */
 
 class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
-    override def fetch()(implicit spark: SparkSession, saveToDB: Boolean): DataFrame = {
+    override def fetch()(implicit spark: SparkSession, sharedParams:SharedParams): Dataset[Feature] = {
         println("Create Dataset from file " + customizedFile.path)
         val inputFile: File = new File(customizedFile.path)
         var dataDF: DataFrame = null
@@ -52,12 +52,15 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
             }
         }
         import spark.implicits._
-        var mapColumn: Column = map(dataDF.columns.tail.flatMap(name => Seq(lit(name), $"$name")): _*)
-        val newDF: DataFrame = dataDF.select($"index" as "id", mapColumn as "dense")
+        var mapColumn: Column = map(dataDF.columns.tail.flatMap(name => Seq(lit(name), $"$name".cast("double"))): _*)
+        val newData: Dataset[Feature] = dataDF.select($"index" as "id", mapColumn as "dense")
+                .withColumn("results", typedLit(Map.empty[String, Double]))
                 .withColumn("explanations", typedLit(Map.empty[String, String]))
-        if(saveToDB == true){
-            SyncableDataFramePaths.setPath(newDF, customizedFile.path)
+                .as[Feature]
+
+        if(sharedParams.saveToDB == true){
+            SyncableDataFramePaths.setPath(newData, customizedFile.path)
         }
-        newDF
+        newData
     }
 }

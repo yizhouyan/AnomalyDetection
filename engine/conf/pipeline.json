@@ -1,5 +1,5 @@
 {
-  "examples":
+  "data":
   {
     "name": "ReadDataFile",
     "params": {
@@ -13,15 +13,9 @@
       {
         "estimators": [
           {
-            "name": "StandardScaler",
-            "params": {
-            }
-          },
-          {
             "name": "IsolationForest",
             "params": {
-              "outputFeatureName": "isolation_forest",
-              "nTrees": 5
+              "outputFeatureName": "iforest_result"
             }
           }
         ]

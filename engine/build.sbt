@@ -13,6 +13,8 @@ libraryDependencies += "org.apache.spark" %% "spark-core" % "2.4.4" % Provided
 
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.4.4" % Provided
 
+libraryDependencies += "org.apache.spark" %% "spark-mllib" % "2.4.4" % Provided
+
 libraryDependencies += "org.apache.thrift" % "libthrift" % "0.9.3" exclude("org.slf4j", "slf4j-api")
 
 libraryDependencies += "com.twitter" %% "scrooge-core" % "4.12.0" exclude("com.twitter", "libthrift")

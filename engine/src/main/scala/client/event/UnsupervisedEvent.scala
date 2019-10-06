@@ -3,7 +3,7 @@ package client.event
 import anomalydetection.ModelStorageService.FutureIface
 import client._
 import com.twitter.util.Await
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
   * Event indicating that a Unsupervised method transformed a DataFrame.
@@ -17,8 +17,8 @@ import org.apache.spark.sql.DataFrame
   * @param stageNum - Stage number (optional)
   */
 case class UnsupervisedEvent(estimator: IEvent,
-                             inputDataframe: DataFrame,
-                             outputDataframe: DataFrame,
+                             inputDataframe: Dataset[_],
+                             outputDataframe: Dataset[_],
                              inputCols: List[String],
                              outputCols: List[String],
                              predictionCol: String,

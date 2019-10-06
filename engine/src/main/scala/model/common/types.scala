@@ -14,19 +14,21 @@ case class PipelineStage(estimators: List[RegistryLookup],
 
 case class PipelineConfig(stages: List[PipelineStage])
 
-case class UnsupervisedWorkflowInput(examples: RegistryLookup,
+case class UnsupervisedWorkflowInput(data: RegistryLookup,
                                      pipelines: PipelineConfig,
                                      runExplanations: Boolean = false,
                                      finalOutputPath: Option[String] = None)
 
 case class SupervisedWorkflowInput(labeledData: RegistryLookup,
-                                   examples: RegistryLookup,
+                                   data: RegistryLookup,
                                    pipelines: PipelineConfig,
                                    runExplanations: Boolean = false,
                                    finalOutputPath: Option[String] = None)
 
 case class CustomizedFile(path: String, fileType: String)
 
-case class Feature(id: String, dense: Map[String, Double], explanations: Map[String, String])
+case class Feature(id: String, dense: Map[String, Double], results: Map[String, Double], explanations: Map[String, String])
 
-case class LabeledExamples(id: String, label: Float)
+case class LabeledData(id: String, label: Float)
+
+case class SharedParams(saveToDB: Boolean, runExplanations: Boolean, outputFilePath: String)

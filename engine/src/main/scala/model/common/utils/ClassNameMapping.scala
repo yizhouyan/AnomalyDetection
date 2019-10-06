@@ -6,6 +6,8 @@ import spray.json._
 import model.common.utils.MyJsonProtocol._
 import model.data.{AbstractData, ReadDataFile}
 import model.pipelines.AbstractEstimator
+import model.pipelines.unsupervised.examples.iforest.{IsolationForest, IsolationForestParams}
+import model.pipelines.unsupervised.examples.{KNNBasedDetection, KNNBasedDetectionParams, LOF, LOFParams, Mahalanobis, MahalanobisParams, StandardScaler, StandardScalerParams}
 
 /**
   * Created by yizhouyan on 9/7/19.

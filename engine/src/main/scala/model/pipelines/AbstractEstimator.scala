@@ -1,7 +1,7 @@
 package model.pipelines
 
 import client.IEvent
-import model.common.LabeledExamples
+import model.common.LabeledData
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import model.common._
 
@@ -10,10 +10,9 @@ import scala.collection.mutable
   * Created by yizhouyan on 9/7/19.
   */
 abstract class AbstractEstimator extends IEvent{
-    def fit(labels: Dataset[LabeledExamples], features: DataFrame, runExplanations: Boolean): Any
-    def transform(features: DataFrame,
-                  runExplanations: Boolean,
+    def fit(labels: Dataset[LabeledData], features: DataFrame, runExplanations: Boolean): Any
+    def transform(features: Dataset[Feature],
                   stageNum: Int = -1,
                   model_params: Option[Any] = None)
-                 (implicit spark: SparkSession, saveToDB: Boolean, finalOutputPath: String)
+                 (implicit spark: SparkSession, sharedParams:SharedParams): Dataset[Feature]
 }

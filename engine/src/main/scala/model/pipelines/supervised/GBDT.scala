@@ -1,6 +1,6 @@
 package model.pipelines.supervised
 
-import model.common.{Feature, LabeledExamples}
+import model.common.{Feature, LabeledData, SharedParams}
 import model.pipelines.AbstractEstimator
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
@@ -10,18 +10,16 @@ import scala.collection.mutable
   * Created by yizhouyan on 9/7/19.
   */
 class GBDT extends AbstractSupervisedAlgo{
-    override def fit(labels: Dataset[LabeledExamples], features: DataFrame, runExplanations: Boolean): Any = {
+    override def fit(labels: Dataset[LabeledData], features: DataFrame, runExplanations: Boolean): Any = {
 
     }
 
-    override def transform(features: DataFrame,
-                           runExplanations: Boolean,
+    override def transform(features: Dataset[Feature],
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           saveToDB: Boolean,
-                           finalOutputPath: String): Unit = {
-
+                           sharedParams:SharedParams): Dataset[Feature] = {
+        features
     }
 
     override def getName(): String = "Gradient Boosted Decision Tree"
