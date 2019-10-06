@@ -50,12 +50,14 @@ case class IsolationForestParams(outputFeatureName: String,
 
 class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: Int = -1)
         extends AbstractUnsupervisedAlgo{
+    var inputFeatureNames: List[String] = List()
+
     override def transform(features: Dataset[Feature],
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
                            sharedParams:SharedParams): Dataset[Feature] = {
-        val inputFeatureNames: List[String] = isolationForestParams.inputFeatureNames match{
+        this.inputFeatureNames = isolationForestParams.inputFeatureNames match{
             case Some(x) => x
             case None => {
                 features.head(1).apply(0).dense.keySet.toList
@@ -66,7 +68,8 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
         val featuresForIF = features.withColumn("featureVec", Converters.mapToVec(inputFeatureNames)($"dense"))
         val iforest = new IForest(isolationForestParams)
         val model = iforest.fit(featuresForIF)
-        val results = iforest.transform(featuresForIF, model).drop($"featureVec").as[Feature]
+        val results = iforest.transform(featuresForIF, model, inputFeatureNames).drop($"featureVec").as[Feature]
+        results.show(5, false)
 
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
@@ -88,6 +91,15 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
 
     override def getHyperParameters(): mutable.Map[Any, Any] = {
         var params = mutable.Map[Any, Any]()
+        params.put("outputFeatureName", isolationForestParams.outputFeatureName)
+        params.put("numTrees", isolationForestParams.numTrees)
+        params.put("maxSamples", isolationForestParams.maxSamples)
+        params.put("maxFeatures", isolationForestParams.maxFeatures)
+        params.put("maxDepth", isolationForestParams.maxDepth)
+        params.put("contamination", isolationForestParams.contamination)
+        params.put("bootstrap", isolationForestParams.bootstrap)
+        params.put("seed", isolationForestParams.seed)
+        params.put("inputFeatureNames", inputFeatureNames)
         params
     }
 }

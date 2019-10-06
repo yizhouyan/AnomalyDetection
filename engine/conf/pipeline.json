@@ -22,6 +22,6 @@
       }
     ]
   },
-  "runExplanations": false,
+  "runExplanations": true,
   "finalOutputPath": "results/kdd_09_data_results.csv"
 }

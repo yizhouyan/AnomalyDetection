@@ -1,6 +1,6 @@
 package model.pipelines.unsupervised.examples.iforest
 
-import model.common.Feature
+import model.common.{Feature, SharedParams}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -57,11 +57,12 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
     final val anomalyScoreCol: String = params.outputFeatureName
 
     import IForest._
+    import model.pipelines.unsupervised.tools.DefaultTools._
 
     lazy val rng = new Random(seed)
 
     var numSamples = 0L
-    var possibleMaxSampels = 0
+    var possibleMaxSamples = 0
 
     val EulerConstant = 0.5772156649
 
@@ -72,24 +73,22 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
      * @param dataset Training Dataset
      * @return A paired RDD, where key is the tree index, value is an array of data instances for training a iTree.
      */
-    private[iforest] def splitData(dataset: Dataset[_]): RDD[(Int, Array[Vector])] = {
+    private def splitData(dataset: Dataset[_]): RDD[(Int, Array[Vector])] = {
         numSamples = dataset.count()
         val fraction =
             if ((maxSamples) > 1) (maxSamples) / numSamples
             else (maxSamples)
 
-        require(fraction <= 1.0, "The max samples must be less then total number of the input data")
+        require(fraction <= 1.0, "The max samples must be less than total number of the input data")
 
-        possibleMaxSampels = (fraction * numSamples).toInt
+        possibleMaxSamples = (fraction * numSamples).toInt
 
-        // use advanced apache common math3 random generator
         val advancedRgn = new RandomDataGenerator(
             RandomGeneratorFactory.createRandomGenerator(new java.util.Random(rng.nextLong()))
         )
 
-
         val rddPerTree = {
-            // SampledIndices is a two-dimensional array, that generates sampling row indices in each iTree.
+            // SampleIndices is a two-dimensional array, that generates sampling row indices in each iTree.
             // E.g. [[1, 3, 6, 4], [6, 4, 2, 5]] indicates that the first tree has data consists of the 1, 3, 6, 4 row
             // samples, the second tree has data consists of the 6, 4, 3, 5 row samples. If bootstrap is true, each
             // array can stores the repeated row indices; if false, each array contains different row indices, and each
@@ -97,14 +96,14 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             // Note: sampleIndices will occupy about maxSamples * numTrees * 8 byte memory in the driver.
             val sampleIndices = if (bootstrap) {
                 Array.tabulate(numTrees) { i =>
-                    Array.fill(possibleMaxSampels) {
+                    Array.fill(possibleMaxSamples) {
                         advancedRgn.nextLong(0, numSamples)
                     }
                 }
             } else {
                 Array.tabulate(numTrees) { i =>
                     reservoirSampleAndCount(Range.Long(0, numSamples, 1).iterator,
-                        possibleMaxSampels, rng.nextLong)._1
+                        possibleMaxSamples, rng.nextLong)._1
                 }
             }
 
@@ -122,16 +121,16 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             }.groupBy(_._1).mapValues(x => x.map(_._2)).map {
                 case (rowIndex: Long, treeIdArray: Array[Int]) =>
                     val treeIdWithNumCopies = treeIdArray.map(treeId => (treeId, 1.0))
-                            .groupBy(_._1).map { case (treeId: Int, tmp: Array[Tuple2[Int, Double]]) =>
-                        tmp.reduce((x, y) => (treeId, x._2 + y._2))
+                            .groupBy(_._1).map {
+                        case (treeId: Int, tmp: Array[Tuple2[Int, Double]]) =>
+                            tmp.reduce((x, y) => (treeId, x._2 + y._2))
                     }.toSeq
-                    (rowIndex, Vectors.sparse((numTrees), treeIdWithNumCopies))
+                    (rowIndex, Vectors.sparse(numTrees, treeIdWithNumCopies))
             }
 
             val broadRowInfo = dataset.sparkSession.sparkContext.broadcast(rowInfo)
 
-            // Firstly filter rows that contained in the rowInfo, i.e., the instances
-            // that are used to construct the forest.
+            // First get all the instances in the rowInfo.
             // Then for each row, get the number of copies in each tree, copy this point
             // to an array with corresponding tree id.
             // Finally reduce by the tree id key.
@@ -164,7 +163,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
 
         // Each iTree of the iForest will be built on parallel and collected in the driver.
         // Approximate memory usage for iForest model is calculated, a warning will be raised if iForest is too large.
-        val usageMemery = (numTrees) * 2 * possibleMaxSampels * 32 / (1024 * 1024)
+        val usageMemery = (numTrees) * 2 * possibleMaxSamples * 32 / (1024 * 1024)
         if (usageMemery > 256) {
             logger.warn("The isolation forest stored on the driver will exceed 256M memory. " +
                     "If your machine can not bear memory consuming, please try small numTrees or maxSamples.")
@@ -177,7 +176,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
                 val random = new Random(rng.nextInt + treeId)
 
                 // sample features
-                val (trainData, featureIdxArr) = sampleFeatures(points, (maxFeatures), random)
+                val (trainData, featureIdxArr) = sampleFeatures(points, maxFeatures, random)
 
                 // calculate actual maxDepth to limit tree height
                 val longestPath = Math.ceil(Math.log(Math.max(2, points.length)) / Math.log(2)).toInt
@@ -208,21 +207,38 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
      *                use VectorAssembler to generate a feature column.
      * @return A predicted dataframe with a prediction column which stores prediction values.
      */
-    def transform(dataset: Dataset[_], model: IForestModel)(implicit spark: SparkSession): DataFrame = {
+    def transform(dataset: Dataset[_], model: IForestModel, inputFeatureNames: List[String])
+                 (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         val numSamples = dataset.count()
         val possibleMaxSamples =
-            if ((maxSamples) > 1.0) (maxSamples) else ((maxSamples) * numSamples)
+            if (maxSamples > 1.0) maxSamples else maxSamples * numSamples
         spark.sparkContext.broadcast(model)
         // calculate anomaly score
-        val scoreUDF = udf { (features: Vector) => {
-            val normFactor = avgLength(possibleMaxSamples)
-            val avgPathLength = calAvgPathLength(features, model)
-            Math.pow(2, -avgPathLength / normFactor)
+        val scoreUDF = udf {
+            (features: Vector) => {
+                val normFactor = avgLength(possibleMaxSamples)
+                val avgPathLength = calAvgPathLength(features, model)
+                Math.pow(2, -avgPathLength / normFactor)
+            }
         }
+        // By default, we use top-3 features to explain why the point has been classified as an outlier.
+        val numExplanations = math.min(inputFeatureNames.length,sharedParams.numFeaturesForExplain)
+        // generate explanations
+        val explanationsUDF = udf{
+            (features: Vector) =>{
+                val normFactor = avgLength(possibleMaxSamples)
+                val featureImportance = calFeatureImportance(features, model, normFactor)
+                featureImportance.argSort.reverse.take(numExplanations).map(x => inputFeatureNames(x)).mkString(",")
+            }
         }
         // append a score column
-        dataset.withColumn("results", map_concat(col("results"),
-            map(lit(anomalyScoreCol), scoreUDF(col((featuresCol))))))
+        var result = dataset.withColumn("results", map_concat(col("results"),
+            map(lit(anomalyScoreCol), scoreUDF(col(featuresCol)))))
+        if(sharedParams.runExplanations){
+            result = result.withColumn("explanations", map_concat(col("explanations"),
+                    map(lit("isolation_forest_explanations"), explanationsUDF(col(featuresCol)))))
+        }
+        result
     }
 
 
@@ -270,6 +286,47 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
         }
         else if (size == 2) 1.0
         else 0.0
+    }
+
+    /**
+     * Calculate feature importance.
+     * @param features A Vector stores feature values.
+     * @return an array of doubles representing the feature importance.
+     */
+    private def calFeatureImportance(features: Vector,
+                                     model: IForestModel,
+                                     normFactor: Double): Array[Double] = {
+        model.trees.map(ifNode => {
+            var importancePerTree = Array.fill(features.size)(0.0)
+            val emptyList = List()
+            val results = calPathLength(features, ifNode, 0, emptyList)
+            val curScore = Math.pow(2, -results._1 / normFactor)
+            results._2.map(x => (importancePerTree(x) = curScore))
+//            println(importancePerTree.mkString(","))
+            importancePerTree
+        }).reduce((a,b) => {a.zip(b).map{case(x,y) => x+y}}).map(x => x / model.trees.length)
+    }
+
+    /**
+     * Calculate a path length for a given feature set in a tree.
+     * @param features A Vector stores feature values.
+     * @param ifNode Tree's root node.
+     * @param currentPathLength Current path length.
+     * @return Path length in this tree.
+     */
+    private def calPathLength(features: Vector,
+                              ifNode: IFNode,
+                              currentPathLength: Int,
+                              usedFeatures: List[Int]): (Double, List[Int]) = ifNode match {
+        case leafNode: IFLeafNode => (currentPathLength + avgLength(leafNode.numInstance), usedFeatures)
+        case internalNode: IFInternalNode =>
+            val attrIndex = internalNode.featureIndex
+            val newUsedFeatures = attrIndex :: usedFeatures
+            if (features(attrIndex) < internalNode.featureValue) {
+                calPathLength(features, internalNode.leftChild, currentPathLength + 1, newUsedFeatures)
+            } else {
+                calPathLength(features, internalNode.rightChild, currentPathLength + 1, newUsedFeatures)
+            }
     }
 
 

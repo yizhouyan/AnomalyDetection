@@ -31,4 +31,7 @@ case class Feature(id: String, dense: Map[String, Double], results: Map[String, 
 
 case class LabeledData(id: String, label: Float)
 
-case class SharedParams(saveToDB: Boolean, runExplanations: Boolean, outputFilePath: String)
+case class SharedParams(saveToDB: Boolean,
+                        runExplanations: Boolean,
+                        outputFilePath: String,
+                        numFeaturesForExplain: Int = 3)
