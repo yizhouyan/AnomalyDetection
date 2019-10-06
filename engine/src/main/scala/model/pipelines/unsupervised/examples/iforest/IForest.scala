@@ -45,6 +45,8 @@ class IForestModel (val _trees: Array[IFNode]) extends Serializable {
  * a sampled paired RDD, where each row key is tree index and row value is a group of sampled data instances for a tree.
  * 2. Training and constructing each iTree on parallel via a map operation and collect the iForest model in the driver.
  * 3. Predict a new Dataset on parallel via a map operation with the collected iForest model.
+ *
+ * Revised based on repo: <a href="https://github.com/titicaca/spark-iforest"> Github-IForest</a>
  */
 class IForest (params: IsolationForestParams, featuresCol: String="featureVec") extends Serializable {
     final val seed: Long = params.seed
