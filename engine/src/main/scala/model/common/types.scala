@@ -35,3 +35,11 @@ case class SharedParams(saveToDB: Boolean,
                         runExplanations: Boolean,
                         outputFilePath: String,
                         numFeaturesForExplain: Int = 3)
+
+case class SubspaceParams(subspaceMinDim: Int,
+                          var subspaceMaxDim: Int,
+                          subspaceNumSpaces: Int,
+                          useFullSpace: Boolean,
+                          seed: Long){
+    require(subspaceMinDim >=1, "SubspaceMinDim should be greater than 0")
+}

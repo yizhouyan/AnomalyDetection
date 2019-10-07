@@ -59,7 +59,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
     final val anomalyScoreCol: String = params.outputFeatureName
 
     import IForest._
-    import model.pipelines.unsupervised.tools.DefaultTools._
+    import model.pipelines.tools.DefaultTools._
 
     lazy val rng = new Random(seed)
 

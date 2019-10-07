@@ -1,18 +1,14 @@
 package model.pipelines.unsupervised
 
-import org.apache.commons.math3.random.{RandomDataGenerator, RandomGeneratorFactory}
-import org.apache.spark.SparkConf
-import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.sql.SparkSession
-
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.ListBuffer
 import scala.util.Random
-
+import util.control.Breaks._
 object test {
-    def main(args: Array[String]): Unit = {
-        import model.pipelines.unsupervised.tools.DefaultTools._
-        val x = Array(1,3,4,5,7)
-        println(x.argSort.reverse.mkString(","))
 
+    def main(args: Array[String]): Unit = {
+        import model.pipelines.tools.DefaultTools._
+        val rng = new Random(1234)
+        for(i <- 1 to 20)
+            println(between(10, 20, rng))
     }
 }

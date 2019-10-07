@@ -29,4 +29,7 @@ libraryDependencies += "commons-cli" % "commons-cli" % "1.2"
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.0"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+
+libraryDependencies += "saurfang" % "spark-knn" % "0.2.0"
+
 parallelExecution in test := false

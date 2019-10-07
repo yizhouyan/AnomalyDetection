@@ -13,9 +13,17 @@
       {
         "estimators": [
           {
-            "name": "IsolationForest",
+            "name": "KNNBasedDetection",
             "params": {
-              "outputFeatureName": "iforest_result"
+              "kList": [3,5],
+              "outputFeatureName": "kdist_result",
+              "useSubspace": true,
+              "subspaceParams": {
+                "subspaceMinDim": 10,
+                "subspaceMaxDim": 15,
+                "subspaceNumSpaces": 2,
+                "useFullSpace": false
+              }
             }
           }
         ]

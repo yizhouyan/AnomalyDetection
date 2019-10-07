@@ -3,7 +3,8 @@ package model.pipelines.unsupervised.examples.iforest
 import client.SyncableDataFramePaths
 import model.common.{Feature, SharedParams}
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
-import model.pipelines.unsupervised.tools.Converters
+import model.pipelines.tools.Converters
+import org.apache.log4j.Logger
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
 import scala.collection.mutable
@@ -52,6 +53,7 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
         extends AbstractUnsupervisedAlgo{
     var inputFeatureNames: List[String] = List()
 
+    import IsolationForest._
     override def transform(features: Dataset[Feature],
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
@@ -63,16 +65,16 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
                 features.head(1).apply(0).dense.keySet.toList
             }
         }
-        println("Input Feature Names: " + inputFeatureNames)
+        logger.info("Input Feature Names: " + inputFeatureNames)
         import spark.implicits._
         val featuresForIF = features.withColumn("featureVec", Converters.mapToVec(inputFeatureNames)($"dense"))
         val iforest = new IForest(isolationForestParams)
         val model = iforest.fit(featuresForIF)
         val results = iforest.transform(featuresForIF, model, inputFeatureNames).drop($"featureVec").as[Feature]
-        results.show(5, false)
 
         // if saveToDB is set to true, save the results to Storage
-        if(sharedParams.saveToDB == true){
+        if(sharedParams.saveToDB == true) {
+            logger.info("Save model to Storage")
             SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
             results.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
             saveUnsupervisedToDB(this,
@@ -102,4 +104,8 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
         params.put("inputFeatureNames", inputFeatureNames)
         params
     }
+}
+
+object IsolationForest{
+    val logger = Logger.getLogger(IsolationForest.getClass)
 }

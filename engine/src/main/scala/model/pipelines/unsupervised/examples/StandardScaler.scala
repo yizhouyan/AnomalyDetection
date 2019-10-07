@@ -3,7 +3,7 @@ package model.pipelines.unsupervised.examples
 import client.SyncableDataFramePaths
 import model.common._
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
-import model.pipelines.unsupervised.tools.Statistics
+import model.pipelines.tools.Statistics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 

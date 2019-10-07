@@ -1,4 +1,4 @@
-package model.pipelines.unsupervised.tools
+package model.pipelines.tools
 
 import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.UDFRegistration

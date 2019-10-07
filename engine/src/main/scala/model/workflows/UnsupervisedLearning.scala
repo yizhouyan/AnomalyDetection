@@ -36,7 +36,7 @@ object UnsupervisedLearning{
         ))
 
         val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
-        implicit val spark: SparkSession = initializeSparkContext()
+        implicit val spark: SparkSession = Utils.initializeSparkContext("UnsupervisedLearning")
         val finalOutputPath: String = unsupervisedWorkflowInput.finalOutputPath match {
             case Some(x) => x
             case None => Utils.getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
@@ -56,15 +56,6 @@ object UnsupervisedLearning{
         spark.stop()
     }
 
-
-    private def initializeSparkContext(): SparkSession = {
-        val conf = new SparkConf().setAppName("UnsupervisedLearning")
-        val spark = SparkSession
-                .builder()
-                .master("local")  //"spark://localhost:7077"
-                .getOrCreate()
-        spark
-    }
     private def parseJson(jsonPath: String): UnsupervisedWorkflowInput = {
         val source: String = Source.fromFile(jsonPath).getLines.mkString
         val jsonAst = source.parseJson // or JsonParser(source)

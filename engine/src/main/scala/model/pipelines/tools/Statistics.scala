@@ -1,4 +1,4 @@
-package model.pipelines.unsupervised.tools
+package model.pipelines.tools
 
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
