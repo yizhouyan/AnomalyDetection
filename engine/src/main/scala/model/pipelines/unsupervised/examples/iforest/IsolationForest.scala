@@ -10,10 +10,6 @@ import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import scala.collection.mutable
 
 /**
- * Created by yizhouyan on 9/7/19.
- */
-
-/**
  * Isolation Forest Parameters.
  *
  * @param outputFeatureName : the name of the output column
@@ -38,6 +34,8 @@ import scala.collection.mutable
  *                  sampled with replacement. If false, sampling without replacement is performed.
  * @param seed: The seed used by the random number generator.
  * @param inputFeatureNames
+ *
+ * Created by yizhouyan on 9/7/19.
  */
 case class IsolationForestParams(outputFeatureName: String,
                                  numTrees: Int,
@@ -69,8 +67,12 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
         import spark.implicits._
         val featuresForIF = features.withColumn("featureVec", Converters.mapToVec(inputFeatureNames)($"dense"))
         val iforest = new IForest(isolationForestParams)
+        logger.info("Start fitting isolation forest models....")
         val model = iforest.fit(featuresForIF)
+        logger.info("Isolation forest model fitted.... ")
+        logger.info("Start transforming dataset on isolation forest models....")
         val results = iforest.transform(featuresForIF, model, inputFeatureNames).drop($"featureVec").as[Feature]
+        logger.info("Finish transforming on isolaiton forest models")
 
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true) {
@@ -86,7 +88,7 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
                 stageNum
             )
         }
-        results
+        results.coalesce(sharedParams.numPartitions)
     }
 
     override def getName(): String = "Isolation Forest"

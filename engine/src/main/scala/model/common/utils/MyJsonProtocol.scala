@@ -36,7 +36,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val registryLookupFormat = jsonFormat2(RegistryLookup)
     implicit val pipelineStageFormat = jsonFormat3(PipelineStage)
     implicit val pipelineConfigFormat = jsonFormat1(PipelineConfig)
-    implicit val unsupervisedWorkflowInputFormat = jsonFormat4(UnsupervisedWorkflowInput)
+    implicit val unsupervisedWorkflowInputFormat = jsonFormat5(UnsupervisedWorkflowInput)
     implicit val supervisedWorkflowInputFormat = jsonFormat5(SupervisedWorkflowInput)
     implicit val standardScalerParamsFormat = jsonFormat2(StandardScalerParams)
     implicit val customizedFileFormat = jsonFormat2(CustomizedFile)

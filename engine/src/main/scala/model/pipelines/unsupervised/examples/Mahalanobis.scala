@@ -134,7 +134,7 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
                 stageNum
             )
         }
-        finalRes
+        finalRes.coalesce(sharedParams.numPartitions)
     }
 
     override def getName(): String = "Mahalanobis Method"

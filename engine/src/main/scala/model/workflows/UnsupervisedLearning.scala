@@ -46,6 +46,12 @@ object UnsupervisedLearning{
 
         // read data from training
         val data = FetchDataExample.fetch(unsupervisedWorkflowInput.data)
+        sharedParams.numPartitions = unsupervisedWorkflowInput.numPartitions match{
+            case Some(x) => x
+            case None =>{
+                math.ceil(data.count()/5000.0).toInt
+            }
+        }
         println(SyncableDataFramePaths.getPath(data))
         import spark.implicits._
         // execute pipeline stages

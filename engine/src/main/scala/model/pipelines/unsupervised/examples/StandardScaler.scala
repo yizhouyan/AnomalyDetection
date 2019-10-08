@@ -71,7 +71,7 @@ class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int =
                 stageNum
             )
         }
-        newDF
+        newDF.coalesce(sharedParams.numPartitions)
     }
 
     override def getName(): String = "Standard Scaler"

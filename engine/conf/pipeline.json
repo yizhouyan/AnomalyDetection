@@ -22,6 +22,40 @@
       {
         "estimators": [
           {
+            "name": "IsolationForest",
+            "params": {
+              "outputFeatureName": "iforest_result"
+            }
+          },
+          {
+            "name": "KNNBasedDetection",
+            "params": {
+              "kList": [3,5],
+              "outputFeatureName": "kdist_result",
+              "useSubspace": false,
+              "subspaceParams": {
+                "subspaceMinDim": 10,
+                "subspaceMaxDim": 15,
+                "subspaceNumSpaces": 2,
+                "useFullSpace": false
+              }
+            }
+          },
+          {
+            "name": "LOF",
+            "params": {
+              "kList": [3,5],
+              "outputFeatureName": "lof_result",
+              "useSubspace": false,
+              "subspaceParams": {
+                "subspaceMinDim": 10,
+                "subspaceMaxDim": 15,
+                "subspaceNumSpaces": 2,
+                "useFullSpace": false
+              }
+            }
+          },
+          {
             "name": "Mahalanobis",
             "params": {
               "outputFeatureName": "mahalanobis_result",

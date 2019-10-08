@@ -84,5 +84,6 @@ object Pipelines {
                 features.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath + "_stage_" + i)
         }
         features.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
+        features.show(5, false)
     }
 }

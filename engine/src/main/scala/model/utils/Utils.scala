@@ -21,6 +21,7 @@ object Utils {
         val spark = SparkSession
                 .builder()
                 .master("local")  //"spark://localhost:7077"
+                .config("spark.sql.codegen.wholeStage", "false")
                 .getOrCreate()
         spark
     }

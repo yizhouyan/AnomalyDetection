@@ -70,6 +70,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
         var results = features
         val allOutputColNames = new ListBuffer[String]
         for ((subspace:List[String], index:Int) <- subspacesList.zipWithIndex) {
+            logger.info("Processing Subspace: " + subspace)
             val featuresForKNN = results.withColumn("featureVec", Converters.mapToVec(subspace)($"dense"))
             val knnResults = computeKNN(featuresForKNN, maxK)
             val flatten_knn_table = knnResults.withColumn("knn", explode(arrays_zip($"neighbors", $"distances")))
@@ -80,6 +81,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                             .orderBy("dist"))
                             .cast(DataTypes.IntegerType))
             for(k: Int <- params.kList){
+                logger.info("Processing K = " + k)
                 val resultsColName = params.outputFeatureName + "_subspace_" + index + "_k_" + k
                 allOutputColNames += resultsColName
                 val flatten_knn_table_for_specific_k = flatten_knn_table
@@ -88,11 +90,13 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                 val kdistScores = flatten_knn_table_for_specific_k
                         .groupBy($"id")
                         .agg(max($"dist").alias("kdist"))
+                logger.info("K-dist computed. ")
                 val lrdScores = flatten_knn_table_for_specific_k.alias("a")
                         .join(kdistScores.alias("b"), $"a.knn_id" === $"b.id", "left")
                         .select($"a.id", $"knn_id", expr("IF(dist > kdist, dist, kdist) AS reachdist"))
                         .groupBy($"id")
                         .agg(expr("IF(avg(reachdist) > 0, 1.0 / avg(reachdist), -1.0) AS lrd"))
+                logger.info("LRD computed. ")
                 val lofScores = lrdScores.alias("a").join(
                     flatten_knn_table_for_specific_k.alias("a")
                         .join(lrdScores.alias("b"), $"a.knn_id" === $"b.id", "left")
@@ -100,6 +104,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                         .agg(avg($"lrd").alias("knn_lrd")).alias("b"),
                     $"a.id" === $"b.id",
                         "left").selectExpr("a.id", "IF(lrd > 0, knn_lrd / lrd, -1.0) AS lof")
+                logger.info("LOF computed. ")
                 results = results.alias("a")
                         .join(lofScores.alias("b"), $"a.id" === $"b.id", "left")
                         .drop($"b.id")
@@ -121,7 +126,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                 stageNum
             )
         }
-        results
+        results.coalesce(sharedParams.numPartitions)
     }
 
     override def getName(): String = "Local Outlier Factor"

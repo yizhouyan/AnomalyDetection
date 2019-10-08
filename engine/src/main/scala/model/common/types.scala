@@ -17,6 +17,7 @@ case class PipelineConfig(stages: List[PipelineStage])
 case class UnsupervisedWorkflowInput(data: RegistryLookup,
                                      pipelines: PipelineConfig,
                                      runExplanations: Boolean = false,
+                                     numPartitions: Option[Int] = None,
                                      finalOutputPath: Option[String] = None)
 
 case class SupervisedWorkflowInput(labeledData: RegistryLookup,
@@ -34,6 +35,7 @@ case class LabeledData(id: String, label: Float)
 case class SharedParams(saveToDB: Boolean,
                         runExplanations: Boolean,
                         outputFilePath: String,
+                        var numPartitions: Int = 100,
                         numFeaturesForExplain: Int = 3)
 
 case class SubspaceParams(subspaceMinDim: Int,

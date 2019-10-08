@@ -99,7 +99,7 @@ class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
                 stageNum
             )
         }
-        results
+        results.coalesce(sharedParams.numPartitions)
     }
 
     override def getName(): String = "KNN based detection"
