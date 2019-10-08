@@ -30,8 +30,8 @@ case class KNNBasedDetectionParams(kList: List[Int],
  * The average distance of each data point to its 1..k-th nearest neighbor
  * is reported as its knn-based anomaly score.
  *
- * @param params
- * @param stageNum
+ * @param params - parameters for knn based detection.
+ * @param stageNum - stage number of the current algorithm.
  */
 class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
         extends AbstractUnsupervisedAlgo with Serializable {

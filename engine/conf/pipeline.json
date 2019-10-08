@@ -13,11 +13,11 @@
       {
         "estimators": [
           {
-            "name": "KNNBasedDetection",
+            "name": "LOF",
             "params": {
               "kList": [3,5],
-              "outputFeatureName": "kdist_result",
-              "useSubspace": true,
+              "outputFeatureName": "lof_result",
+              "useSubspace": false,
               "subspaceParams": {
                 "subspaceMinDim": 10,
                 "subspaceMaxDim": 15,
