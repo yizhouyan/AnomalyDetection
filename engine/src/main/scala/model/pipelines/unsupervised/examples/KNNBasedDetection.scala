@@ -73,6 +73,7 @@ class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
         }
         val allOutputColNames = new ListBuffer[String]
         for ((subspace:List[String], index:Int) <- subspacesList.zipWithIndex) {
+            logger.info("Processing Subspace: " + subspace)
             val resultsColNames = params.kList.map(x =>
                 params.outputFeatureName + "_subspace_" + index + "_k_" + x).toArray
             allOutputColNames ++= resultsColNames
@@ -88,8 +89,7 @@ class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
-            SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
-            results.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
+            SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath + "_stage_" + stageNum)
             saveUnsupervisedToDB(this,
                 features,
                 results,

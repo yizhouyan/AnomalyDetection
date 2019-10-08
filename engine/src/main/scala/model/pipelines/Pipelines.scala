@@ -2,7 +2,7 @@ package model.pipelines
 
 import model.common.utils.ClassNameMapping
 import model.common._
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
 /**
   * Created by yizhouyan on 9/7/19.
@@ -80,6 +80,9 @@ object Pipelines {
                                   sharedParams:SharedParams): Dataset[Feature]
                 }].transform(features, i)
             }
+            if(sharedParams.saveToDB)
+                features.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath + "_stage_" + i)
         }
+        features.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
     }
 }

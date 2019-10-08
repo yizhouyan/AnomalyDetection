@@ -61,7 +61,7 @@ class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int =
                 .withColumn("explanations", typedLit(Map.empty[String, String])).as[Feature]
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
-            SyncableDataFramePaths.setPath(newDF, sharedParams.outputFilePath)
+            SyncableDataFramePaths.setPath(newDF, sharedParams.outputFilePath + "_stage_" + stageNum)
             saveUnsupervisedToDB(this,
                 features,
                 newDF,

@@ -39,7 +39,6 @@ object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val unsupervisedWorkflowInputFormat = jsonFormat4(UnsupervisedWorkflowInput)
     implicit val supervisedWorkflowInputFormat = jsonFormat5(SupervisedWorkflowInput)
     implicit val standardScalerParamsFormat = jsonFormat2(StandardScalerParams)
-    implicit val mahalanobisParamsFormat = jsonFormat1(MahalanobisParams)
     implicit val customizedFileFormat = jsonFormat2(CustomizedFile)
 
     // set default values for Isolation forest
@@ -108,6 +107,25 @@ object MyJsonProtocol extends DefaultJsonProtocol {
 
         override def write(obj: LOFParams): JsValue = JsObject(
             "kList" -> JsString(obj.kList.mkString(",")),
+            "outputFeatureName" -> JsString(obj.outputFeatureName),
+            "useSubspace" -> JsBoolean(obj.useSubspace),
+            "inputFeatureNames" -> JsString(obj.inputFeatureNames.mkString(","))
+        )
+    }
+
+    // set default values for Mahalanobis method
+    implicit object MahalanobisJSONFormat extends RootJsonFormat[MahalanobisParams] {
+        override def read(json: JsValue): MahalanobisParams = {
+            val fields = json.asJsObject("Invalid JSON Object").fields
+            MahalanobisParams(
+                fields.get("outputFeatureName").fold("lof_results")(_.convertTo[String]),
+                fields.get("useSubspace").fold(false)(_.convertTo[Boolean]),
+                fields.get("subspaceParams").map(_.convertTo[SubspaceParams]),
+                fields.get("inputFeatureNames").map(_.convertTo[List[String]])
+            )
+        }
+
+        override def write(obj: MahalanobisParams): JsValue = JsObject(
             "outputFeatureName" -> JsString(obj.outputFeatureName),
             "useSubspace" -> JsBoolean(obj.useSubspace),
             "inputFeatureNames" -> JsString(obj.inputFeatureNames.mkString(","))

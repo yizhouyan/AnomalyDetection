@@ -13,15 +13,23 @@
       {
         "estimators": [
           {
-            "name": "LOF",
+            "name": "StandardScaler",
             "params": {
-              "kList": [3,5],
-              "outputFeatureName": "lof_result",
-              "useSubspace": false,
+            }
+          }
+        ]
+      },
+      {
+        "estimators": [
+          {
+            "name": "Mahalanobis",
+            "params": {
+              "outputFeatureName": "mahalanobis_result",
+              "useSubspace": true,
               "subspaceParams": {
-                "subspaceMinDim": 10,
+                "subspaceMinDim": 5,
                 "subspaceMaxDim": 15,
-                "subspaceNumSpaces": 2,
+                "subspaceNumSpaces": 1,
                 "useFullSpace": false
               }
             }
@@ -31,5 +39,5 @@
     ]
   },
   "runExplanations": true,
-  "finalOutputPath": "results/kdd_09_data_results.csv"
+  "finalOutputPath": "results/kdd_09_data_results"
 }
