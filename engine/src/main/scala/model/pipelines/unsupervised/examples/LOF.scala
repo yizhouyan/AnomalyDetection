@@ -116,7 +116,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
-            SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath + "_stage_" + stageNum)
+            SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
             saveUnsupervisedToDB(this,
                 features,
                 results,

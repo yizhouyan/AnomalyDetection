@@ -32,12 +32,12 @@
             "params": {
               "kList": [3,5],
               "outputFeatureName": "kdist_result",
-              "useSubspace": false,
+              "useSubspace": true,
               "subspaceParams": {
                 "subspaceMinDim": 10,
                 "subspaceMaxDim": 15,
                 "subspaceNumSpaces": 2,
-                "useFullSpace": false
+                "useFullSpace": true
               }
             }
           },
@@ -51,7 +51,7 @@
                 "subspaceMinDim": 10,
                 "subspaceMaxDim": 15,
                 "subspaceNumSpaces": 2,
-                "useFullSpace": false
+                "useFullSpace": true
               }
             }
           },
@@ -61,9 +61,9 @@
               "outputFeatureName": "mahalanobis_result",
               "useSubspace": true,
               "subspaceParams": {
-                "subspaceMinDim": 5,
+                "subspaceMinDim": 10,
                 "subspaceMaxDim": 15,
-                "subspaceNumSpaces": 1,
+                "subspaceNumSpaces": 2,
                 "useFullSpace": false
               }
             }
@@ -73,5 +73,5 @@
     ]
   },
   "runExplanations": true,
-  "finalOutputPath": "results/kdd_09_data_results"
+  "finalOutputPath": "results/kdd_09_data_test_unsupervised_results"
 }
