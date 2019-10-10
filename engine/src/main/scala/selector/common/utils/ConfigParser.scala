@@ -1,6 +1,7 @@
 package selector.common.utils
 
 import org.apache.commons.cli.{BasicParser, CommandLine, CommandLineParser, HelpFormatter, Option, Options, ParseException}
+import org.apache.log4j.Logger
 
 /**
   * Created by yizhouyan on 9/6/19.
@@ -8,6 +9,7 @@ import org.apache.commons.cli.{BasicParser, CommandLine, CommandLineParser, Help
 class ConfigParser {
     var confFile :String = ""
     var jsonFile: String = ""
+    import ConfigParser._
     def this(args: Array[String]) = {
         this()
         parseCommandLine(args)
@@ -28,9 +30,9 @@ class ConfigParser {
             }
         }
         confFile = commandLine.getOptionValue("conf")
-        println("Input Property File: " + confFile)
+        logger.info("Input Property File: " + confFile)
         jsonFile = commandLine.getOptionValue("json")
-        println("Input Json File: " + jsonFile)
+        logger.info("Input Json File: " + jsonFile)
     }
 
     private def createCommandLineOptions(): Options = {
@@ -48,3 +50,8 @@ class ConfigParser {
         options
     }
 }
+
+object ConfigParser{
+    val logger = Logger.getLogger(ConfigParser.getClass)
+}
+

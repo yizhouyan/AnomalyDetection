@@ -19,6 +19,7 @@ import selector.labeled_examples.FetchLabeledExample
   */
 object ExampleSelector{
     def main(args: Array[String]): Unit = {
+        implicit val spark: SparkSession = initializeSparkContext("Example Selector")
         val configs: ConfigParser = new ConfigParser(args)
         val mainWorkflowInput: MainWorkflowInput = parseJson(configs.jsonFile)
         val config: CompositeConfiguration = new CompositeConfiguration()
@@ -44,7 +45,6 @@ object ExampleSelector{
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "selected_examples")
         }
 
-        implicit val spark: SparkSession = initializeSparkContext("Example Selector")
         implicit val sharedParams: SharedParams = SharedParams(mainWorkflowInput.sharedFilePath,
                 saveToDB, allExamplesOutputFileName,selectedExamplesOutputFileName
             )

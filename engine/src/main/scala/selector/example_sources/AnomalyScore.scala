@@ -2,6 +2,7 @@ package selector.example_sources
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import selector.common.{Example, Feature, LabeledExample, SharedParams}
 import selector.common.utils.ReadInputData
+import org.apache.spark.sql.functions._
 
 /**
   * Created by yizhouyan on 9/8/19.
@@ -30,8 +31,16 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
         println("Get Top Scored Anomalies: " + name())
         // get data from input path
         val data: Dataset[Feature] = ReadInputData.fetchInputData(params.filePath)
-        println(data.count())
-        data.show(5, false)
-        spark.emptyDataset[Example]
+        var results = {
+            if(!params.usePercentile)
+                data.where($"results".getItem(params.inputColName) >= params.bottomThres
+                        and $"results".getItem(params.inputColName) < params.topThres)
+                        .withColumn("weight", $"results".getItem(params.inputColName))
+                        .withColumn("source", lit(name())).as[Example]
+            else{
+                spark.emptyDataset[Example]
+            }
+        }
+        results
     }
 }

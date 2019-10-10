@@ -8,8 +8,8 @@
     {
         "name": "AnomalyScore",
         "params": {
-          "inputColName": "isolation_forest",
-          "bottomThres": 0.9,
+          "inputColName": "iforest_result",
+          "bottomThres": 0.6,
           "topThres": 1.0,
           "usePercentile": false
         }

@@ -3,11 +3,13 @@ package selector.common.utils
 import java.io.File
 
 import client.SyncableDataFramePaths
+import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import selector.common.{Feature, SharedParams}
 import utils.{FileNameNotSetException, FileTypeNotSupportedException, FileUtil, NoFileUnderInputFolderException}
 
 object ReadInputData {
+    val logger = Logger.getLogger(this.getClass)
     def detectFileType(allFileNames: Array[String]): String ={
         for (filename <- allFileNames){
             if(filename.toLowerCase.contains("parquet"))
@@ -21,7 +23,7 @@ object ReadInputData {
     }
 
     def readDataFromFile(inputFilePath: String)(implicit spark: SparkSession): DataFrame ={
-        println("Read Data from file " + inputFilePath)
+        logger.info("Read Data from file " + inputFilePath)
         val inputFile: File = new File(inputFilePath)
         var dataDF: DataFrame = null
         if(inputFile.isDirectory){

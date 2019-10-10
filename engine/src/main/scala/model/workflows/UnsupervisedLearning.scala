@@ -18,6 +18,7 @@ import scala.io.Source
  */
 object UnsupervisedLearning{
     def main(args: Array[String]): Unit = {
+        implicit val spark: SparkSession = initializeSparkContext("UnsupervisedLearning")
         val configs: utils.ConfigParser = new ConfigParser(args)
         val unsupervisedWorkflowInput: UnsupervisedWorkflowInput = parseJson(configs.jsonFile)
         val config: CompositeConfiguration = new CompositeConfiguration()
@@ -35,7 +36,6 @@ object UnsupervisedLearning{
         ))
 
         val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
-        implicit val spark: SparkSession = initializeSparkContext("UnsupervisedLearning")
         val finalOutputPath: String = unsupervisedWorkflowInput.finalOutputPath match {
             case Some(x) => x
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
