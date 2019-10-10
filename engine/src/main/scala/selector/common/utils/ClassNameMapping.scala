@@ -19,7 +19,12 @@ object ClassNameMapping {
     }
 
     def mapClassNameToClass(lookup: RegistryLookup): Any = {
-        val jsonAst = lookup.params.mkString.parseJson
+        val jsonAst = {
+            if (lookup.params.isDefined)
+                lookup.params.mkString.parseJson
+            else
+                "{}".parseJson
+        }
         lookup.name match{
             case "AnomalyScore" => new AnomalyScore(jsonAst.convertTo[AnomalyScoreParams])
             case "KmeansClusters" => new KmeansClusters(jsonAst.convertTo[KmeansClustersParams])

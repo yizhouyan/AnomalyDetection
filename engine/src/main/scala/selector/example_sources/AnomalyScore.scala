@@ -8,9 +8,6 @@ import org.apache.spark.sql.functions._
 
 import scala.collection.mutable
 
-/**
-  * Created by yizhouyan on 9/8/19.
-  */
 case class AnomalyScoreParams(inputColName: String,
                               filePath: Option[String],
                               outputColName: Option[String],
@@ -18,6 +15,10 @@ case class AnomalyScoreParams(inputColName: String,
                               topThres: Double = 1.0,
                               usePercentile: Boolean = false)
 
+/**
+ * Selects examples whose anomaly scores are within [bottom_threshold, top_threshold].
+ * If use_percentile is set to true, we select users whose spoofing scores are within the percentile.
+ */
 class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
     import AnomalyScore._
     override def getName(): String = {
@@ -60,7 +61,7 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
                 data,
                 results,
                 labeledExample,
-                -1
+                0
             )
         }
         results

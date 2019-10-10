@@ -2,7 +2,7 @@ package selector.common.utils
 
 import selector.common.{MainWorkflowInput, RegistryLookup}
 import selector.example_selectors.{SimilaritySelectorParams, WeightedSelectorParams}
-import selector.example_sources.{ActiveLearningParams, AnomalyScoreDisagreeParams, AnomalyScoreParams, KmeansClustersParams}
+import selector.example_sources.{ActiveLearningParams, AnomalyScoreParams, KmeansClustersParams}
 import spray.json.{DefaultJsonProtocol, JsBoolean, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
 
 /**
@@ -12,8 +12,6 @@ import spray.json.{DefaultJsonProtocol, JsBoolean, JsNumber, JsObject, JsString,
 object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val registryLookupFormat = jsonFormat2(RegistryLookup)
     implicit val mainWorkflowInputFormat = jsonFormat6(MainWorkflowInput)
-    implicit val anomalyScoreDisagreeParamsFormat = jsonFormat5(AnomalyScoreDisagreeParams)
-    implicit val kmeansClustersParamsFormat = jsonFormat5(KmeansClustersParams)
     implicit val activeLearningParamsFormat = jsonFormat1(ActiveLearningParams)
     implicit val weightedSelectorParamsFormat = jsonFormat3(WeightedSelectorParams)
     implicit val similaritySelectorParamsFormat = jsonFormat3(SimilaritySelectorParams)
@@ -36,6 +34,28 @@ object MyJsonProtocol extends DefaultJsonProtocol {
             "bottomThres" -> JsNumber(obj.bottomThres),
             "topThres" -> JsNumber(obj.topThres),
             "usePercentile" -> JsBoolean(obj.usePercentile)
+        )
+    }
+
+    // set default values for kmeans example source
+    implicit object KmeansParamsJSONFormat extends RootJsonFormat[KmeansClustersParams] {
+        override def read(json: JsValue): KmeansClustersParams = {
+            val fields = json.asJsObject("Invalid JSON Object").fields
+            KmeansClustersParams(
+                fields.get("outputColName").map(_.convertTo[String]),
+                fields.get("filePath").map(_.convertTo[String]),
+                fields.get("numExamplesFromEachCluster").fold(1)(_.convertTo[Int]),
+                fields.get("nClusters").fold(1000)(_.convertTo[Int]),
+                fields.get("maxIter").fold(10)(_.convertTo[Int]),
+                fields.get("distanceMeasure").fold("euclidean")(_.convertTo[String]),
+                fields.get("seed").fold(getClass.getName.hashCode.toLong)(_.convertTo[Long])
+            )
+        }
+        override def write(obj: KmeansClustersParams): JsValue = JsObject(
+            "numExamplesFromEachCluster" -> JsNumber(obj.numExamplesFromEachCluster),
+            "nClusters" -> JsNumber(obj.nClusters),
+            "maxIter" -> JsNumber(obj.maxIter),
+            "seed" -> JsNumber(obj.seed)
         )
     }
 }

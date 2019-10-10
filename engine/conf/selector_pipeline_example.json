@@ -17,9 +17,7 @@
     {
         "name": "KmeansClusters",
         "params": {
-          "numExamplesFromEachCluster": 1,
-          "bottomThres": 0.0,
-          "topThres": 1.0,
+          "nClusters": 10,
           "sortByDist": true
         }
     },
