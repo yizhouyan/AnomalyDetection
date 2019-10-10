@@ -11,8 +11,8 @@ import spray.json.DefaultJsonProtocol
 
 object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val registryLookupFormat = jsonFormat2(RegistryLookup)
-    implicit val mainWorkflowInputFormat = jsonFormat6(MainWorkflowInput)
-    implicit val anomalyScoreParamsFormat = jsonFormat5(AnomalyScoreParams)
+    implicit val mainWorkflowInputFormat = jsonFormat7(MainWorkflowInput)
+    implicit val anomalyScoreParamsFormat = jsonFormat6(AnomalyScoreParams)
     implicit val anomalyScoreDisagreeParamsFormat = jsonFormat5(AnomalyScoreDisagreeParams)
     implicit val kmeansClustersParamsFormat = jsonFormat5(KmeansClustersParams)
     implicit val activeLearningParamsFormat = jsonFormat1(ActiveLearningParams)

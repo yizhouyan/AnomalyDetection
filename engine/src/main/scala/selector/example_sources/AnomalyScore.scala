@@ -1,28 +1,36 @@
 package selector.example_sources
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import selector.common.{Feature, SharedParams}
+import selector.common.utils.ReadInputData
 
 /**
   * Created by yizhouyan on 9/8/19.
   */
 case class AnomalyScoreParams(inputColName: String,
+                              filePath: Option[String],
                               outputColName: Option[String],
                               bottomThres: Double = 0.9,
                               topThres: Double = 1.0,
                               usePercentile: Boolean = false)
 
-class AnomalyScore(anomalyScoreParams: AnomalyScoreParams) extends AbstractExampleSource{
+class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
     override def name(): String = {
-        anomalyScoreParams.outputColName match{
+        params.outputColName match{
             case Some(a) => a
             case None => "anomaly_score_%s_%.2f_%.2f".format(
-                anomalyScoreParams.inputColName,
-                anomalyScoreParams.bottomThres,
-                anomalyScoreParams.topThres)
+                params.inputColName,
+                params.bottomThres,
+                params.topThres)
         }
     }
 
-    override def fetch(labeledExample: DataFrame, spark: SparkSession): DataFrame = {
+    override def fetch(labeledExample: DataFrame)
+                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         println("Get Top Scored Anomalies: " + name())
+        // get data from input path
+        val data: Dataset[Feature] = ReadInputData.fetchInputData(params.filePath)
+        println(data.count())
+        data.show(5, false)
         spark.emptyDataFrame
     }
 }

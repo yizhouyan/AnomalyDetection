@@ -1,16 +1,16 @@
 package model.workflows
 
+import utils.Utils._
 import conf.InputConfigs
 import model.common.utils.MyJsonProtocol._
 import model.common.utils._
-import model.common.{SupervisedWorkflowInput, UnsupervisedWorkflowInput, utils}
+import model.common.{SupervisedWorkflowInput, utils}
 import model.data.{FetchDataExample, FetchLabels}
 import model.pipelines.Pipelines
-import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import spray.json._
 import model.common._
-import model.utils.Utils
+
 import org.apache.commons.configuration.{CompositeConfiguration, PropertiesConfiguration}
 
 import scala.io.Source
@@ -25,13 +25,13 @@ object SupervisedLearning{
         val config: CompositeConfiguration = new CompositeConfiguration()
         config.addConfiguration(new PropertiesConfiguration(configs.confFile))
 
-        implicit val spark: SparkSession = initializeSparkContext()
+        implicit val spark: SparkSession = initializeSparkContext("supervised method")
         // read data from training
         val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
         val runExplanations: Boolean = supervisedWorkflowInput.runExplanations
         val finalOutputPath: String = supervisedWorkflowInput.finalOutputPath match {
             case Some(x) => x
-            case None => Utils.getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
+            case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
         }
         implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
 
@@ -44,16 +44,6 @@ object SupervisedLearning{
         //        val dataDF = spark.read.format("csv").option("header", "true").load("file:///Users/yizhouyan/PycharmProjects/anomaly_detection/notebooks/kdd_09_data.csv")
         //        dataDF.show(10)
         spark.stop()
-    }
-
-
-    private def initializeSparkContext(): SparkSession = {
-        val conf = new SparkConf().setAppName("UnsupervisedLearning")
-        val spark = SparkSession
-                .builder()
-                .master("local")  //"spark://localhost:7077"
-                .getOrCreate()
-        spark
     }
 
     private def parseJson(jsonPath: String): SupervisedWorkflowInput = {

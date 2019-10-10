@@ -71,7 +71,9 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
         val model = iforest.fit(featuresForIF)
         logger.info("Isolation forest model fitted.... ")
         logger.info("Start transforming dataset on isolation forest models....")
-        val results = iforest.transform(featuresForIF, model, inputFeatureNames).drop($"featureVec").as[Feature]
+        val results = iforest.transform(featuresForIF, model, inputFeatureNames)
+                .drop($"featureVec").as[Feature]
+                .coalesce(sharedParams.numPartitions)
         logger.info("Finish transforming on isolaiton forest models")
 
         // if saveToDB is set to true, save the results to Storage
@@ -84,11 +86,10 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
                 results,
                 inputFeatureNames,
                 List(isolationForestParams.outputFeatureName),
-                isolationForestParams.outputFeatureName,
                 stageNum
             )
         }
-        results.coalesce(sharedParams.numPartitions)
+        results
     }
 
     override def getName(): String = "Isolation Forest"

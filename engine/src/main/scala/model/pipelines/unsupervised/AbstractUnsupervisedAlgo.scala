@@ -19,7 +19,6 @@ abstract class AbstractUnsupervisedAlgo extends AbstractEstimator{
                              outputDataframe: Dataset[_],
                              inputCols: List[String],
                              outputCols: List[String],
-                             predictionCol: String,
                              stageNum: Int)
                             (implicit mdbs: Option[ModelStorageSyncer]): Unit= {
         UnsupervisedEvent(unsupervised,
@@ -27,7 +26,6 @@ abstract class AbstractUnsupervisedAlgo extends AbstractEstimator{
             outputDataframe,
             inputCols,
             outputCols,
-            predictionCol,
             stageNum
         ).sync(mdbs.get.client.get, Some(mdbs.get))
     }

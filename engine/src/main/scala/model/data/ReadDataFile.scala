@@ -2,20 +2,23 @@ package model.data
 
 import java.io.File
 
+import utils.{FileTypeNotSupportedException,NoFileUnderInputFolderException}
+import utils.FileUtil
 import client.SyncableDataFramePaths
 import model.common.CustomizedFile
 import org.apache.spark.sql.{Column, DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.functions._
 import model.common._
-import model.common.utils._
+import org.apache.log4j.Logger
 
 /**
   * Created by yizhouyan on 9/6/19.
   */
 
 class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
+    import ReadDataFile._
     override def fetch()(implicit spark: SparkSession, sharedParams:SharedParams): Dataset[Feature] = {
-        println("Create Dataset from file " + customizedFile.path)
+        logger.info("Create Dataset from file " + customizedFile.path)
         val inputFile: File = new File(customizedFile.path)
         var dataDF: DataFrame = null
         if(inputFile.isDirectory){
@@ -30,12 +33,10 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
                             .option("header", "true")
                             .load(allFileNames.toList: _*)
                 }else{
-                    println("Input File Type not supported! We support parquet, json and csv files. ")
-                    System.exit(0)
+                    throw FileTypeNotSupportedException("Input File Type not supported! We support parquet, json and csv files. ")
                 }
             }else{
-                println("No file in this directory...")
-                System.exit(0)
+                throw NoFileUnderInputFolderException("No file in this directory...")
             }
         }else{
             if(customizedFile.fileType.toLowerCase.equals("parquet")){
@@ -47,8 +48,7 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
                         .option("header", "true")
                         .load(customizedFile.path)
             }else{
-                println("Input File Type not supported! We support parquet, json and csv files. ")
-                System.exit(0)
+                throw FileTypeNotSupportedException("Input File Type not supported! We support parquet, json and csv files. ")
             }
         }
         import spark.implicits._
@@ -64,3 +64,8 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
         newData
     }
 }
+
+object ReadDataFile{
+    val logger = Logger.getLogger(ReadDataFile.getClass)
+}
+

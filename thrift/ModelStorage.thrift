@@ -250,7 +250,6 @@ struct TransformEventResponse {
   estimatorSpec: The EstimatorSpec used to perform this transformation
   inputColumns: The columns of the input DataFrame that the Transformer depends on.
   outputColumns: The columns that the Model outputs in the new DataFrame.
-  predictionColumn: The column name of the prediction.
   experimentRunId: The id of the Experiment Run that contains this event.
 */
 struct UnsupervisedEvent {
@@ -259,9 +258,8 @@ struct UnsupervisedEvent {
   3: EstimatorSpec estimatorSpec
   4: list<string> inputColumns,
   5: list<string> outputColumns,
-  6: string predictionColumn,
-  7: i32 experimentRunId,
-  8: i32 stageNumber
+  6: i32 experimentRunId,
+  7: i32 stageNumber
 }
 
 /*
@@ -280,6 +278,44 @@ struct UnsupervisedEventResponse {
   3: i32 specId,
   4: i32 eventId,
   5: i32 unsupervisedEventId
+}
+
+/*
+  This event indicates that an output DataFrame was created from an input DataFrame using example sources/example selectors.
+
+  oldDataFrame: The input DataFrame.
+  newDataFrame: The output DataFrame.
+  estimatorSpec: The EstimatorSpec used to perform this transformation.
+  experimentRunId: The id of the Experiment Run that contains this event.
+  labelDataFrame: The dataframe that contains the labels.
+*/
+struct ExampleSelectorEvent {
+  1: DataFrame oldDataFrame,
+  2: DataFrame labelDataFrame,
+  3: DataFrame newDataFrame,
+  4: EstimatorSpec estimatorSpec,
+  5: i32 experimentRunId,
+  6: i32 stageNumber
+}
+
+/*
+  The response given to the creation of a ExampleSelectorEvent.
+
+  oldDataFrameId: The id of the input DataFrame of the transformation.
+  labelDataFrameId: The id of the label DataFrame of the transformation.
+  newDataFrameId: The id of the output DataFrame of the transformation.
+  specId: The id of the EstimatorId that guided the learning.
+  eventId: The generic event id of this exampleSelector event (unique among all events).
+  exampleSelectorEventId: The specific UnsupervisedEvent id of the created event
+  (unique among unsupervised events)
+*/
+struct ExampleSelectorEventResponse {
+  1: i32 oldDataFrameId,
+  2: i32 newDataFrameId,
+  3: i32 labelDataFrameId,
+  4: i32 specId,
+  5: i32 eventId,
+  6: i32 exampleSelectorEventId
 }
 
 /*
@@ -454,10 +490,19 @@ service ModelStorageService {
      Stores an UnsupervisedEvent in the database. This indicates that an unsupervised algorithm was used to create an output DataFrame
      from an input DataFrame.
 
-     te: The TransformEvent.
+     te: The UnsupervisedEvent.
    */
   UnsupervisedEventResponse storeUnsupervisedEvent(1: UnsupervisedEvent te)
       throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
+
+  /*
+       Stores an ExampleSelectorEvent in the database. This indicates that an example source/selector was used to create an output DataFrame
+       from an input DataFrame.
+
+       te: The ExampleSelectorEvent.
+   */
+  ExampleSelectorEventResponse storeExampleSelectorEvent(1: ExampleSelectorEvent te)
+        throws (1: InvalidExperimentRunException ierEx, 2: ServerLogicException svEx),
 
   /*
    Stores a ProjectEvent in the database. This indicates that a new project was created and stored in the database.

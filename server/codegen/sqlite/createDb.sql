@@ -163,8 +163,6 @@ CREATE TABLE UnsupervisedEvent (
   inputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
   -- The columns outputted by the Transformer
   outputColumns TEXT NOT NULL, -- Should be comma-separated, no spaces, alphabetical.
-  -- The names of the output column that will contain the model's prediction
-  predictionColumn TEXT NOT NULL,
   -- The ExperimentRun that contains this event.
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
   -- The stageNumber of the event in the pipeline
@@ -172,6 +170,27 @@ CREATE TABLE UnsupervisedEvent (
 );
 CREATE INDEX IF NOT EXISTS UnsupervisedEventIndexNewDf ON UnsupervisedEvent(newDf);
 CREATE INDEX IF NOT EXISTS UnsupervisedEventIndexExperimentRun ON UnsupervisedEvent(experimentRun);
+
+-- An ExampleSelectorEvent describes using an EstimateSpec to produce an output
+-- DataFrame from an input DataFrame
+DROP TABLE IF EXISTS ExampleSelectorEvent;
+CREATE TABLE ExampleSelectorEvent (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    -- The data DataFrame that is input into the Transformer
+    oldDf INTEGER REFERENCES DataFrame NOT NULL,
+    -- The label DataFrame that is input into the Transformer
+    labelDf INTEGER REFERENCES DataFrame NOT NULL,
+    -- The output DataFrame of the Transformer
+    newDf INTEGER REFERENCES DataFrame NOT NULL,
+    -- The EstimatorSpec used to perform this transformation
+    estimatorSpec INTEGER REFERENCES EstimatorSpec,
+    -- The ExperimentRun that contains this event.
+    experimentRun INTEGER REFERENCES ExperimentRun NOT NULL,
+    -- The stageNumber of the event in the pipeline
+    stageNumber INTEGER DEFAULT -1
+);
+CREATE INDEX IF NOT EXISTS ExampleSelectorEventIndexNewDf ON ExampleSelectorEvent(newDf);
+CREATE INDEX IF NOT EXISTS ExampleSelectorEventIndexExperimentRun ON ExampleSelectorEvent(experimentRun);
 
 -- An event that represents the evaluation of a model given a DataFrame
 DROP TABLE IF EXISTS ModelMetricEvent;
@@ -189,7 +208,7 @@ CREATE TABLE ModelMetricEvent (
   experimentRun INTEGER REFERENCES ExperimentRun NOT NULL
 );
 
--- An event that represents the evaluation of a model given a DataFrame
+-- An event that represents the evaluation of an unsupervised model given a DataFrame
 DROP TABLE IF EXISTS UnsupervisedMetricEvent;
 CREATE TABLE UnsupervisedMetricEvent (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

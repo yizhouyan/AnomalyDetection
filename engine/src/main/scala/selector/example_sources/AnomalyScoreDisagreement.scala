@@ -1,6 +1,7 @@
 package selector.example_sources
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import selector.common.{Example, LabeledExample, SharedParams}
 
 /**
   * Created by yizhouyan on 9/8/19.
@@ -21,7 +22,8 @@ class AnomalyScoreDisagreement(anomalyScoreDisagreeParams: AnomalyScoreDisagreeP
         }
     }
 
-    override def fetch(labeledExample: DataFrame, spark: SparkSession): DataFrame = {
+    override def fetch(labeledExample: DataFrame)
+                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         println("Get Anomalies with disagreement: " + name())
         spark.emptyDataFrame
     }

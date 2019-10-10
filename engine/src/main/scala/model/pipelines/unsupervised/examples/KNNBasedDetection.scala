@@ -85,7 +85,7 @@ class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
                                 map_from_arrays(lit(resultsColNames), getKdistUDF(col("distances")))))
                             .drop("distances").as[Feature]
         }
-
+        results = results.coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
@@ -95,11 +95,10 @@ class KNNBasedDetection(params: KNNBasedDetectionParams, stageNum: Int = -1)
                 results,
                 inputFeatureNames,
                 allOutputColNames.toList,
-                params.outputFeatureName,
                 stageNum
             )
         }
-        results.coalesce(sharedParams.numPartitions)
+        results
     }
 
     override def getName(): String = "KNN based detection"

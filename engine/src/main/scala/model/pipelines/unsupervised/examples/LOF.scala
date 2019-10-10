@@ -113,6 +113,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                         .drop("lof").as[Feature]
             }
         }
+        results = results.coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
@@ -122,11 +123,10 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                 results,
                 inputFeatureNames,
                 allOutputColNames.toList,
-                params.outputFeatureName,
                 stageNum
             )
         }
-        results.coalesce(sharedParams.numPartitions)
+        results
     }
 
     override def getName(): String = "Local Outlier Factor"

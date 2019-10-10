@@ -97,6 +97,11 @@ public class ModelStorageServer implements ModelStorageService.Iface {
     }
 
     @Override
+    public ExampleSelectorEventResponse storeExampleSelectorEvent(ExampleSelectorEvent se) throws InvalidExperimentRunException, ServerLogicException, TException {
+        return ExceptionWrapper.run(se.experimentRunId, ctx, () -> ExampleSelectorEventDao.store(se, ctx));
+    }
+
+    @Override
     public ProjectEventResponse storeProjectEvent(ProjectEvent pr) throws ServerLogicException, TException {
         return ExceptionWrapper.run(() -> ProjectDao.store(pr, ctx));
     }

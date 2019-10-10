@@ -2,6 +2,7 @@
   "labeledExamples": {
     "name": "KDDCupLabeledExample"
   },
+  "sharedFilePath": "results/kdd_09_data_test_unsupervised_results",
   "exampleSources": [
     {
         "name": "AnomalyScore",
@@ -40,7 +41,7 @@
   "exampleSelector": {
         "name": "KDDCupData"
   },
-  "allExamplesOutputTableName": "all_examples_output",
-  "selectedExamplesOutputTableName": "selected_examples_output",
-  "labeledExamplesOutputTableName": "labeled_examples_output"
+  "allExamplesOutputFileName": "all_examples_output",
+  "selectedExamplesOutputFileName": "selected_examples_output",
+  "labeledExamplesOutputFileName": "labeled_examples_output"
 }

@@ -1,16 +1,15 @@
 package model.workflows
 
-import client.{ModelStorageSyncer, NewExperimentRun, NewOrExistingProject, SyncableDataFramePaths}
+import utils.Utils._
+import client.{ModelStorageSyncer, NewExperimentRun, NewOrExistingProject}
 import conf.InputConfigs
+import model.common.utils.ConfigParser
 import model.common.{SharedParams, UnsupervisedWorkflowInput, utils}
-import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import model.common.utils._
 import spray.json._
 import model.common.utils.MyJsonProtocol._
 import model.data.FetchDataExample
 import model.pipelines.Pipelines
-import model.utils.Utils
 import org.apache.commons.configuration.{CompositeConfiguration, PropertiesConfiguration}
 
 import scala.io.Source
@@ -36,10 +35,10 @@ object UnsupervisedLearning{
         ))
 
         val saveToDB: Boolean = config.getBoolean(InputConfigs.saveToDBConf, false)
-        implicit val spark: SparkSession = Utils.initializeSparkContext("UnsupervisedLearning")
+        implicit val spark: SparkSession = initializeSparkContext("UnsupervisedLearning")
         val finalOutputPath: String = unsupervisedWorkflowInput.finalOutputPath match {
             case Some(x) => x
-            case None => Utils.getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
+            case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
         }
         val runExplanations: Boolean = unsupervisedWorkflowInput.runExplanations
         implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
@@ -52,8 +51,6 @@ object UnsupervisedLearning{
                 math.ceil(data.count()/5000.0).toInt
             }
         }
-        println(SyncableDataFramePaths.getPath(data))
-        import spark.implicits._
         // execute pipeline stages
         Pipelines.transform(
             data,

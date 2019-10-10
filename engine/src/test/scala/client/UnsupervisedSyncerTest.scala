@@ -53,7 +53,6 @@ class UnsupervisedSyncerTest extends org.scalatest.FunSuite {
             outputDataframe,
             inputCols,
             outputCols,
-            "word_output",
             1
         ).sync(ModelStorageSyncer.syncer.get.client.get, Some(ModelStorageSyncer.syncer.get))
         spark.close()

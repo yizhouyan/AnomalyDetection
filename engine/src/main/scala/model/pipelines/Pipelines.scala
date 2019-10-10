@@ -2,12 +2,14 @@ package model.pipelines
 
 import model.common.utils.ClassNameMapping
 import model.common._
+import org.apache.log4j.Logger
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
 /**
   * Created by yizhouyan on 9/7/19.
   */
 object Pipelines {
+    val logger = Logger.getLogger(Pipelines.getClass)
     def fit(labels: Dataset[LabeledData],
             features: Dataset[Feature],
             pipelines: PipelineConfig,

@@ -1,4 +1,4 @@
-package model.utils
+package utils
 
 import java.util.UUID
 
@@ -9,6 +9,7 @@ object Utils {
     def getRandomFilePath(pathPrefix: String="", filePrefix: String=""): String ={
         java.nio.file.Paths.get(pathPrefix, filePrefix + "_" + UUID.randomUUID()).toString
     }
+
     def initializeSparkContext(appName: String): SparkSession = {
         val conf = new SparkConf().setAppName(appName)
         import org.apache.log4j.{Level, Logger}

@@ -119,22 +119,21 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
             }
             results = results.drop($"featureVec")
         }
-        val finalRes = results.as[Feature]
+        val finalRes = results.as[Feature].coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
-            SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
+            SyncableDataFramePaths.setPath(finalRes, sharedParams.outputFilePath)
 //            results.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
             saveUnsupervisedToDB(this,
                 features,
-                results,
+                finalRes,
                 inputFeatureNames,
                 allOutputColNames.toList,
-                params.outputFeatureName,
                 stageNum
             )
         }
-        finalRes.coalesce(sharedParams.numPartitions)
+        finalRes
     }
 
     override def getName(): String = "Mahalanobis Method"

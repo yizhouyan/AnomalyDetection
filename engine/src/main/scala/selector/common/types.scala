@@ -10,8 +10,25 @@ case class RegistryLookup(name:String, params: Option[JsValue] = None)
 
 case class MainWorkflowInput(exampleSources: List[RegistryLookup],
                              exampleSelector: RegistryLookup,
-                             allExamplesOutputTableName: Option[String] = None,
-                             selectedExamplesOutputTableName: Option[String] = None,
-                             labeledExamplesOutputTableName: Option[String] = None,
-                             labeledExamples: Option[RegistryLookup] = None)
+                             allExamplesOutputFileName: Option[String] = None,
+                             selectedExamplesOutputFileName: Option[String] = None,
+                             labeledExamplesOutputFileName: Option[String] = None,
+                             labeledExamples: Option[RegistryLookup] = None,
+                             sharedFilePath: Option[String] = None)
 
+case class Feature(id: String, dense: Map[String, Double], results: Map[String, Double], explanations: Map[String, String])
+
+case class Example(id: String,
+                   source: String,
+                   weight: Double,
+                   dense: Map[String, Double],
+                   results: Map[String, Double],
+                   explanations: Map[String, String])
+
+case class LabeledExample(id: String, label: Double)
+
+case class SharedParams(sharedFilePath: Option[String],
+                        saveToDB: Boolean,
+                        allExamplesOutputFileName: String,
+                        selectedExamplesOutputFileName: String,
+                        labeledExamplesOutputFileName: String)

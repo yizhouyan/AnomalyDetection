@@ -1,11 +1,13 @@
 package model.common.utils
 
 import org.apache.commons.cli.{BasicParser, CommandLine, CommandLineParser, HelpFormatter, Option, Options, ParseException}
+import org.apache.log4j.Logger
 
 /**
   * Created by yizhouyan on 9/6/19.
   */
 class ConfigParser {
+    import ConfigParser._
     var confFile :String = ""
     var jsonFile: String = ""
     def this(args: Array[String]) = {
@@ -28,9 +30,9 @@ class ConfigParser {
             }
         }
         confFile = commandLine.getOptionValue("conf")
-        println("Input Property File: " + confFile)
+        logger.info("Input Property File: " + confFile)
         jsonFile = commandLine.getOptionValue("json")
-        println("Input Json File: " + jsonFile)
+        logger.info("Input Json File: " + jsonFile)
     }
 
     private def createCommandLineOptions(): Options = {
@@ -47,4 +49,8 @@ class ConfigParser {
 
         options
     }
+}
+
+object ConfigParser{
+    val logger = Logger.getLogger(ConfigParser.getClass)
 }

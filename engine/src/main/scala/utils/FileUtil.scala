@@ -1,4 +1,4 @@
-package model.common.utils
+package utils
 
 import java.io.File
 

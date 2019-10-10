@@ -53,7 +53,6 @@ class UnsupervisedReuseDFTest extends org.scalatest.FunSuite {
             outputDataframe,
             inputCols,
             outputCols,
-            "word_output",
             1
         ).sync(ModelStorageSyncer.syncer.get.client.get, Some(ModelStorageSyncer.syncer.get))
         val unsupervisedEvent_2 = UnsupervisedEvent(unsupervised,
@@ -61,7 +60,6 @@ class UnsupervisedReuseDFTest extends org.scalatest.FunSuite {
             outputDataframe,
             inputCols,
             outputCols,
-            "word_output",
             2
         ).sync(ModelStorageSyncer.syncer.get.client.get, Some(ModelStorageSyncer.syncer.get))
         spark.close()

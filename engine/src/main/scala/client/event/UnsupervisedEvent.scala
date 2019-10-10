@@ -13,7 +13,6 @@ import org.apache.spark.sql.{DataFrame, Dataset}
   * @param outputDataframe - The output from the transformer.
   * @param inputCols - Input Columns of the dataframe
   * @param outputCols - Output Columns of the dataframe
-  * @param predictionCol - Column name that contains the prediction results
   * @param stageNum - Stage number (optional)
   */
 case class UnsupervisedEvent(estimator: IEvent,
@@ -21,7 +20,6 @@ case class UnsupervisedEvent(estimator: IEvent,
                              outputDataframe: Dataset[_],
                              inputCols: List[String],
                              outputCols: List[String],
-                             predictionCol: String,
                              stageNum: Int
                          ) extends ModelStorageEvent {
   /**
@@ -35,7 +33,6 @@ case class UnsupervisedEvent(estimator: IEvent,
     SyncableEstimator(estimator),
     inputCols,
     outputCols,
-    predictionCol,
     experimentRunId = mdbs.experimentRun.id,
     stageNum
   )

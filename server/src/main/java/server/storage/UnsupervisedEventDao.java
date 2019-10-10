@@ -60,7 +60,6 @@ public class UnsupervisedEventDao {
         );
         ueRec.setInputcolumns(ue.inputColumns.stream().collect(Collectors.joining(",")));
         ueRec.setOutputcolumns(ue.outputColumns.stream().collect(Collectors.joining(",")));
-        ueRec.setPredictioncolumn(ue.predictionColumn);
         ueRec.setStagenumber(ue.stageNumber);
         ueRec.store();
 
@@ -101,7 +100,6 @@ public class UnsupervisedEventDao {
                 Tables.UNSUPERVISEDEVENT.INPUTCOLUMNS,
                 Tables.UNSUPERVISEDEVENT.OUTPUTCOLUMNS,
                 Tables.UNSUPERVISEDEVENT.EXPERIMENTRUN,
-                Tables.UNSUPERVISEDEVENT.PREDICTIONCOLUMN,
                 Tables.UNSUPERVISEDEVENT.STAGENUMBER,
                 Tables.ESTIMATORSPEC.ID,
                 Tables.ESTIMATORSPEC.ESTIMATORTYPE,
@@ -141,12 +139,11 @@ public class UnsupervisedEventDao {
 
                     // Construct the TransformEvent.
                     int expRunId = rec.get(Tables.UNSUPERVISEDEVENT.EXPERIMENTRUN);
-                    String predictCol = rec.get(Tables.UNSUPERVISEDEVENT.PREDICTIONCOLUMN);
                     int stageNum = rec.get(Tables.UNSUPERVISEDEVENT.STAGENUMBER);
                     List<String> inputCols = Arrays.asList(rec.get(Tables.UNSUPERVISEDEVENT.INPUTCOLUMNS).split(","));
                     List<String> outputCols = Arrays.asList(rec.get(Tables.UNSUPERVISEDEVENT.OUTPUTCOLUMNS).split(","));
                     UnsupervisedEvent unsupervisedEvent = new UnsupervisedEvent(oldDf, newDf, estimatorSpec, inputCols, outputCols,
-                            predictCol,expRunId, stageNum);
+                            expRunId, stageNum);
 
                     // Create the mapping from ID to TransformEvent.
                     int unsupervisedEventId = rec.get(Tables.UNSUPERVISEDEVENT.ID);

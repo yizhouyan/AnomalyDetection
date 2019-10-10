@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <thrift_version>0.10.0</thrift_version>
+        <thrift_version>0.12.0</thrift_version>
     </properties>
 
     <groupId>server</groupId>
@@ -169,11 +169,11 @@
             </build>
         </profile>
         <profile>
-            <id>thrift-0.11.0</id>
+            <id>thrift-0.12.0</id>
             <activation>
                 <property>
                     <name>thrift_version</name>
-                    <value>0.11.0</value>
+                    <value>0.12.0</value>
                 </property>
             </activation>
             <build>
@@ -181,7 +181,7 @@
                     <plugin>
                         <groupId>org.apache.thrift</groupId>
                         <artifactId>thrift-maven-plugin</artifactId>
-                        <!-- As of authoring, there is no 0.11.0 plugin available. -->
+                        <!-- As of authoring, there is no 0.12.0 plugin available. -->
                         <version>0.10.0</version>
                         <executions>
                             <execution>
