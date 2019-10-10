@@ -8,8 +8,12 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import selector.common.{Feature, SharedParams}
 import utils.{FileNameNotSetException, FileTypeNotSupportedException, FileUtil, NoFileUnderInputFolderException}
 
+import scala.collection.mutable
+
 object ReadInputData {
     val logger = Logger.getLogger(this.getClass)
+    val inputFileNameToData = new mutable.HashMap[String, Dataset[Feature]]
+
     def detectFileType(allFileNames: Array[String]): String ={
         for (filename <- allFileNames){
             if(filename.toLowerCase.contains("parquet"))
@@ -70,10 +74,12 @@ object ReadInputData {
             else
                 throw FileNameNotSetException("Input file name not set!")
         }
+        if(inputFileNameToData.contains(finalInputFilePath))
+            return inputFileNameToData.get(finalInputFilePath).get
         val dataDF = readDataFromFile(finalInputFilePath)
         import spark.implicits._
         val newData: Dataset[Feature] = dataDF.as[Feature]
-
+        inputFileNameToData.put(finalInputFilePath, newData)
         if(sharedParams.saveToDB == true){
             SyncableDataFramePaths.setPath(newData, finalInputFilePath)
         }

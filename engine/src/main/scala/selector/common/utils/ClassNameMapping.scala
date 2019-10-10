@@ -22,7 +22,6 @@ object ClassNameMapping {
         val jsonAst = lookup.params.mkString.parseJson
         lookup.name match{
             case "AnomalyScore" => new AnomalyScore(jsonAst.convertTo[AnomalyScoreParams])
-            case "AnomalyScoreDisagreement" => new AnomalyScoreDisagreement(jsonAst.convertTo[AnomalyScoreDisagreeParams])
             case "KmeansClusters" => new KmeansClusters(jsonAst.convertTo[KmeansClustersParams])
             case "ActiveLearning" => new ActiveLearning(jsonAst.convertTo[ActiveLearningParams])
             case "Identity" => new Identity

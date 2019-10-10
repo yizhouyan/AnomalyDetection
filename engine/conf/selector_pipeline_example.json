@@ -9,18 +9,9 @@
         "name": "AnomalyScore",
         "params": {
           "inputColName": "iforest_result",
-          "bottomThres": 0.6,
-          "topThres": 1.0,
-          "usePercentile": false
-        }
-    },
-    {
-        "name": "AnomalyScoreDisagreement",
-        "params": {
-          "inputColNames": ["isolation_forest","mahalanobis"],
           "bottomThres": 0.9,
           "topThres": 1.0,
-          "usePercentile": false
+          "usePercentile": true
         }
     },
     {
