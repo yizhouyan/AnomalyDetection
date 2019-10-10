@@ -1,16 +1,16 @@
 package selector.labeled_examples
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import selector.common.RegistryLookup
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import selector.common.utils.ClassNameMapping
+import selector.common.{LabeledExample, RegistryLookup}
 
 /**
   * Created by yizhouyan on 9/7/19.
   */
 object FetchLabeledExample{
-    def fetch(lookup: RegistryLookup, spark: SparkSession) : DataFrame = {
-        val callDataClass = Class.forName("selector.labeled_examples." + lookup.name)
-                .getConstructors()(0)
-                .newInstance().asInstanceOf[{ def fetch(spark: SparkSession): DataFrame }]
-        callDataClass.fetch(spark)
+    def fetch(lookup: RegistryLookup)(implicit spark: SparkSession) : Dataset[LabeledExample] = {
+        val callDataClass = ClassNameMapping.mapDataTypeToClass(lookup)
+                .asInstanceOf[{ def fetch()(implicit spark: SparkSession): Dataset[LabeledExample]}]
+        callDataClass.fetch()
     }
 }

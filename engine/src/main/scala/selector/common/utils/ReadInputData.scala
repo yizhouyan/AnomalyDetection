@@ -20,18 +20,9 @@ object ReadInputData {
         throw FileTypeNotSupportedException("Input file type not supported! We support parquet, json and csv files.")
     }
 
-    def fetchInputData(inputFilePath: Option[String])
-                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
-        val finalInputFilePath = {
-            if(inputFilePath.isDefined)
-                inputFilePath.get
-            else if(sharedParams.sharedFilePath.isDefined)
-                sharedParams.sharedFilePath.get
-            else
-                throw FileNameNotSetException("Input file name not set!")
-        }
-        println("Read Data from file " + finalInputFilePath)
-        val inputFile: File = new File(finalInputFilePath)
+    def readDataFromFile(inputFilePath: String)(implicit spark: SparkSession): DataFrame ={
+        println("Read Data from file " + inputFilePath)
+        val inputFile: File = new File(inputFilePath)
         var dataDF: DataFrame = null
         if(inputFile.isDirectory){
             var allFileNames: Array[String]  = FileUtil.getRecursiveListOfFiles(inputFile: File)
@@ -52,18 +43,32 @@ object ReadInputData {
                 throw NoFileUnderInputFolderException("No input file under the input path!")
             }
         }else{
-            if(finalInputFilePath.toLowerCase.contains("parquet")){
-                dataDF = spark.read.parquet(finalInputFilePath)
-            }else if(finalInputFilePath.toLowerCase.contains("json")){
-                dataDF = spark.read.json(finalInputFilePath)
-            }else if(finalInputFilePath.toLowerCase.contains("csv")) {
+            if(inputFilePath.toLowerCase.contains("parquet")){
+                dataDF = spark.read.parquet(inputFilePath)
+            }else if(inputFilePath.toLowerCase.contains("json")){
+                dataDF = spark.read.json(inputFilePath)
+            }else if(inputFilePath.toLowerCase.contains("csv")) {
                 dataDF = spark.read.format("csv")
                         .option("header", "true")
-                        .load(finalInputFilePath)
+                        .load(inputFilePath)
             }else{
                 throw FileTypeNotSupportedException("Input file type not supported! We support parquet, json and csv files.")
             }
         }
+        dataDF
+    }
+
+    def fetchInputData(inputFilePath: Option[String])
+                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
+        val finalInputFilePath = {
+            if(inputFilePath.isDefined)
+                inputFilePath.get
+            else if(sharedParams.sharedFilePath.isDefined)
+                sharedParams.sharedFilePath.get
+            else
+                throw FileNameNotSetException("Input file name not set!")
+        }
+        val dataDF = readDataFromFile(finalInputFilePath)
         import spark.implicits._
         val newData: Dataset[Feature] = dataDF.as[Feature]
 

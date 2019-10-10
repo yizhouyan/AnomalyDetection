@@ -1,14 +1,12 @@
 package model.pipelines.unsupervised.examples.iforest
 
-import model.common.{Feature, SharedParams}
+import model.common.{SharedParams}
 
 import scala.collection.mutable
 import scala.util.Random
 import org.apache.commons.math3.random.{RandomDataGenerator, RandomGeneratorFactory}
-import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.ml.linalg._
-import org.apache.spark.ml.util._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions._

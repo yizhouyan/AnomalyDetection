@@ -1,7 +1,6 @@
 package model.pipelines.tools
 
 import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.sql.UDFRegistration
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.udf
 

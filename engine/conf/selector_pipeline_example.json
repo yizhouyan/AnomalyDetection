@@ -1,6 +1,7 @@
 {
   "labeledExamples": {
-    "name": "KDDCupLabeledExample"
+    "name": "ReadLabeledExample",
+    "params": "data/kdd_09_labels.csv"
   },
   "sharedFilePath": "results/kdd_09_data_test_unsupervised_results",
   "exampleSources": [
@@ -42,6 +43,5 @@
         "name": "KDDCupData"
   },
   "allExamplesOutputFileName": "all_examples_output",
-  "selectedExamplesOutputFileName": "selected_examples_output",
-  "labeledExamplesOutputFileName": "labeled_examples_output"
+  "selectedExamplesOutputFileName": "selected_examples_output"
 }

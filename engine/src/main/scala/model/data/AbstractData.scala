@@ -1,7 +1,7 @@
 package model.data
 
 import model.common.{Feature, SharedParams}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
   * Created by yizhouyan on 9/6/19.

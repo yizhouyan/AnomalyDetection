@@ -5,7 +5,7 @@ import conf.InputConfigs
 import org.apache.commons.configuration.{CompositeConfiguration, PropertiesConfiguration}
 import org.apache.spark.sql.SparkSession
 import utils.Utils._
-import selector.common.{MainWorkflowInput, SharedParams}
+import selector.common.{LabeledExample, MainWorkflowInput, SharedParams}
 import selector.common.utils.ConfigParser
 
 import scala.io.Source
@@ -43,24 +43,17 @@ object ExampleSelector{
             case Some(x) => x
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "selected_examples")
         }
-        val labeledExamplesOutputFileName: String = mainWorkflowInput.selectedExamplesOutputFileName match {
-            case Some(x) => x
-            case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "labeled_examples")
-        }
 
         implicit val spark: SparkSession = initializeSparkContext("Example Selector")
         implicit val sharedParams: SharedParams = SharedParams(mainWorkflowInput.sharedFilePath,
-                saveToDB, allExamplesOutputFileName,selectedExamplesOutputFileName,
-                labeledExamplesOutputFileName
+                saveToDB, allExamplesOutputFileName,selectedExamplesOutputFileName
             )
-
+        import spark.implicits._
         // get labeled examples
         val labeledExamples = mainWorkflowInput.labeledExamples match {
-            case Some(a) => FetchLabeledExample.fetch(a, spark)
-            case None => spark.emptyDataFrame
+            case Some(a) => FetchLabeledExample.fetch(a)
+            case None => spark.emptyDataset[LabeledExample]
         }
-        // save to labeled example output table
-
         // look up examples and union them together
         val allData = FetchExampleSources.fetch(mainWorkflowInput.exampleSources, labeledExamples)
 

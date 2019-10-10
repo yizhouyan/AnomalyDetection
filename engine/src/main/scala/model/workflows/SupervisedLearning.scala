@@ -7,7 +7,7 @@ import model.common.utils._
 import model.common.{SupervisedWorkflowInput, utils}
 import model.data.{FetchDataExample, FetchLabels}
 import model.pipelines.Pipelines
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.SparkSession
 import spray.json._
 import model.common._
 

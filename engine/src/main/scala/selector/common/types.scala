@@ -12,7 +12,6 @@ case class MainWorkflowInput(exampleSources: List[RegistryLookup],
                              exampleSelector: RegistryLookup,
                              allExamplesOutputFileName: Option[String] = None,
                              selectedExamplesOutputFileName: Option[String] = None,
-                             labeledExamplesOutputFileName: Option[String] = None,
                              labeledExamples: Option[RegistryLookup] = None,
                              sharedFilePath: Option[String] = None)
 
@@ -30,5 +29,4 @@ case class LabeledExample(id: String, label: Double)
 case class SharedParams(sharedFilePath: Option[String],
                         saveToDB: Boolean,
                         allExamplesOutputFileName: String,
-                        selectedExamplesOutputFileName: String,
-                        labeledExamplesOutputFileName: String)
+                        selectedExamplesOutputFileName: String)

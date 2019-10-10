@@ -1,6 +1,6 @@
 package client
 
-import org.apache.spark.sql.{DataFrame, DataFrameReader, Dataset}
+import org.apache.spark.sql.{Dataset}
 
 import scala.collection.mutable
 

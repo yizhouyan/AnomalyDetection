@@ -1,6 +1,6 @@
 package selector.example_sources
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import selector.common.{Feature, SharedParams}
+import selector.common.{Example, Feature, LabeledExample, SharedParams}
 import selector.common.utils.ReadInputData
 
 /**
@@ -24,13 +24,14 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
         }
     }
 
-    override def fetch(labeledExample: DataFrame)
-                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
+    override def fetch(labeledExample: Dataset[LabeledExample])
+                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example] = {
+        import spark.implicits._
         println("Get Top Scored Anomalies: " + name())
         // get data from input path
         val data: Dataset[Feature] = ReadInputData.fetchInputData(params.filePath)
         println(data.count())
         data.show(5, false)
-        spark.emptyDataFrame
+        spark.emptyDataset[Example]
     }
 }

@@ -1,7 +1,6 @@
 package model.common.utils
 
 import model.common.{CustomizedFile, RegistryLookup}
-import model.pipelines.unsupervised._
 import spray.json._
 import model.common.utils.MyJsonProtocol._
 import model.data.{AbstractData, ReadDataFile}

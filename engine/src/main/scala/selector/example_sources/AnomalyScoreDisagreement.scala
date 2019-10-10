@@ -22,9 +22,10 @@ class AnomalyScoreDisagreement(anomalyScoreDisagreeParams: AnomalyScoreDisagreeP
         }
     }
 
-    override def fetch(labeledExample: DataFrame)
-                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
+    override def fetch(labeledExample: Dataset[LabeledExample])
+                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example] = {
+        import spark.implicits._
         println("Get Anomalies with disagreement: " + name())
-        spark.emptyDataFrame
+        spark.emptyDataset[Example]
     }
 }

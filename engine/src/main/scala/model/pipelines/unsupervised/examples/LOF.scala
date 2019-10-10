@@ -6,7 +6,7 @@ import model.pipelines.tools.Converters
 import model.pipelines.tools.DefaultTools.generateSubspaces
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import model.pipelines.tools.KNN._
 import org.apache.spark.sql.expressions.Window
 

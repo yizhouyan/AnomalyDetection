@@ -4,7 +4,7 @@ import client.SyncableDataFramePaths
 import model.common.{Feature, SharedParams, SubspaceParams}
 import model.pipelines.tools.Converters
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import model.pipelines.tools.KNN._
 import model.pipelines.tools.DefaultTools._
 import org.apache.log4j.Logger

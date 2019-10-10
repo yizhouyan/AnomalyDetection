@@ -1,7 +1,7 @@
 package selector.example_sources
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import selector.common.SharedParams
+import org.apache.spark.sql.{Dataset, SparkSession}
+import selector.common.{Example, LabeledExample, SharedParams}
 
 /**
   * Created by yizhouyan on 9/8/19.
@@ -16,9 +16,10 @@ class ActiveLearning(activeLearningParams: ActiveLearningParams) extends Abstrac
         }
     }
 
-    override def fetch(labeledExample: DataFrame)
-                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
+    override def fetch(labeledExample: Dataset[LabeledExample])
+                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example] = {
+        import spark.implicits._
         println("Active Learning: " + name())
-        spark.emptyDataFrame
+        spark.emptyDataset[Example]
     }
 }

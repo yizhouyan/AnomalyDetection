@@ -1,7 +1,6 @@
 package model.pipelines.supervised
 
 import model.common.{Feature, LabeledData, SharedParams}
-import model.pipelines.AbstractEstimator
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable

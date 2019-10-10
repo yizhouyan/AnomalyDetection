@@ -8,14 +8,11 @@ import java.util.UUID
 
 import anomalydetection.ModelStorageService.FutureIface
 import anomalydetection._
-import client.event.{ExperimentRunEvent, ModelStorageEvent, ProjectEvent}
+import client.event.{ExperimentRunEvent, ProjectEvent}
 import client.util.Timer
 import com.twitter.finagle.Thrift
 import com.twitter.finagle.transport.Transport
-import com.twitter.util.{Await, Duration}
-import org.apache.spark.sql.DataFrame
-
-import scala.collection.mutable.ArrayBuffer
+import com.twitter.util.{Duration}
 
 /**
   * Represents a project configuration for the syncer to use.

@@ -5,11 +5,19 @@ import selector.example_sources._
 import spray.json._
 import selector.common.utils.MyJsonProtocol._
 import selector.example_selectors._
+import selector.labeled_examples.{AbstractLabeledExamples, ReadLabeledExample}
 
 /**
   * Created by yizhouyan on 9/7/19.
   */
 object ClassNameMapping {
+    def mapDataTypeToClass(lookup: RegistryLookup): AbstractLabeledExamples = {
+        val jsonAst = lookup.params.mkString.parseJson
+        lookup.name match{
+            case "ReadLabeledExample" => new ReadLabeledExample(jsonAst.convertTo[String])
+        }
+    }
+
     def mapClassNameToClass(lookup: RegistryLookup): Any = {
         val jsonAst = lookup.params.mkString.parseJson
         lookup.name match{

@@ -1,6 +1,6 @@
 package model.data
 
-import model.common.{Feature, LabeledData}
+import model.common.LabeledData
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**

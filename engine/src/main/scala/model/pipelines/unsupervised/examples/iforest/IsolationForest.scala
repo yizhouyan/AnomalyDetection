@@ -5,7 +5,7 @@ import model.common.{Feature, SharedParams}
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import model.pipelines.tools.Converters
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.mutable
 

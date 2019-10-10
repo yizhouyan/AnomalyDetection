@@ -1,6 +1,6 @@
 package client
 
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{Dataset}
 
 /**
   * Created by yizhouyan on 9/30/19.

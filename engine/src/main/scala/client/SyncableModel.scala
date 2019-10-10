@@ -1,9 +1,5 @@
 package client
 
-import org.apache.spark.sql.DataFrame
-
-
-
 object SyncableModel{
   /**
     * Convert from a Transformer into a Thrift structure.

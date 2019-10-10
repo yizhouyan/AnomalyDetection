@@ -1,7 +1,7 @@
 package model.data
 
 import model.common.utils.ClassNameMapping
-import model.common.{Feature, LabeledData, RegistryLookup}
+import model.common.{LabeledData, RegistryLookup}
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
