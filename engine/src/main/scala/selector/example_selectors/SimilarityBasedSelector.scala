@@ -1,22 +1,108 @@
 package selector.example_selectors
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import model.pipelines.tools.Converters
+import org.apache.log4j.Logger
+import org.apache.spark.ml.linalg.{DenseVector, Vector, Vectors}
+import org.apache.spark.sql.{Dataset, SparkSession}
+import selector.common.utils.ReadInputData
+import selector.common.{Example, ExampleWithFeatures, Feature, LabeledExample, SharedParams}
+import org.apache.spark.sql.functions._
+import breeze.linalg.{norm, DenseVector => BDV}
+
+import scala.collection.mutable
 
 /**
+ * An example selector that considers the similarity between unlabeled examples
+ * and dissimilarity between labeled examples. The example selector mainly contains
+ * two parts: (1) filtering points that are similar to the existing labels.
+ * (2) sort the points according to the similarity to the other. The goal is to
+ * avoid querying similar instances repetitively and to get more representative
+ * candidates to label.
+ *
+ * Detailed Algorithm:
+ *     1. Get feature vectors for example candidates as well as labeled examples.
+ *     2. Compute similarities between candidates and labeled examples.
+ *     3. Set a threshold to filter out examples that are similar to the
+ * labeled examples.
+ *     4. Do clustering on all remaining selected examples. Assign weight to each
+ * cluster as num_instances_in_cluster/avg(min_similarity_to_labeled_examples).
+ *     5. If the number of desired examples is smaller than the number of clusters.
+ * We randomly return an instance in each top-weighted cluster. Otherwise, we
+ * compute the number of examples selected from each cluster as k and randomly
+ * return k points from each cluster.
+ *
   * Created by yizhouyan on 9/8/19.
   */
 
-case class SimilaritySelectorParams(numExamples: Int,
+case class SimilaritySelectorParams(numExamples: Option[Int],
+                                    filePath: Option[String],
                                     similarityFunction: String = "cosine",
                                     similarityThreshold: Float = 0.0f)
 
-class SimilarityBasedSelector(similaritySelectorParams: SimilaritySelectorParams) extends AbstractExampleSelector{
-    override def name(): String = {
+
+class SimilarityBasedSelector(params: SimilaritySelectorParams) extends AbstractExampleSelector{
+    var numExamples: Int = 0
+    import SimilarityBasedSelector._
+    override def getName(): String = {
         "Similarity_based_selector"
     }
 
-    override def fetch(allExample: DataFrame, labeledExample: DataFrame, spark: SparkSession): DataFrame = {
-        println("Example Selector:" + name())
-        allExample
+    override def fetch(allExample: Dataset[Example], labeledExample: Dataset[LabeledExample])
+                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[ExampleWithFeatures] = {
+        import spark.implicits._
+        logger.info("Example Selector:" + getName())
+        val data: Dataset[Feature] = ReadInputData.fetchInputData()
+        val inputFeatureNames = data.head(1).apply(0).dense.keySet.toList
+        // get feature vectors of all examples
+        val allExampleFeatures = allExample.withColumn("features", Converters.mapToVec(inputFeatureNames)($"dense"))
+                .drop("dense").drop("results").drop("explanations")
+        // get feature vectors of labeled examples
+        val labeledExampleFeatures = labeledExample.join(data,"id")
+                .withColumn("features", Converters.mapToVec(inputFeatureNames)($"dense"))
+                .drop("dense").drop("results").drop("explanations")
+        // compute similarity between example candidates and labeled instances. (use cosine similarity or euclidean
+        // distance) and filter examples that are similar to the labeled examples (min_similarity <= threhsold)
+        println("All Examples Features Count: " + allExampleFeatures.count())
+        println("LabeledExampleFeatures Count: " + labeledExampleFeatures.count())
+        val euclideanDistanceUdf = udf{
+            (x: Vector,y: Vector) => math.sqrt(Vectors.sqdist(x, y))
+        }
+        val cosineDistanceUdf = udf {
+            (x: Vector, y: Vector) => {
+                val bdv1 = new BDV(x.toArray)
+                val bdv2 = new BDV(y.toArray)
+                1 - (bdv1 dot bdv2) / (norm(bdv1) * norm(bdv2))
+            }
+        }
+        val allExamplesWithSimilarity = {
+            if(params.similarityFunction.equals("euclidean"))
+                allExampleFeatures.alias("a")
+                        .crossJoin(labeledExampleFeatures.alias("b"))
+                        .withColumn("dist", euclideanDistanceUdf($"a.features", $"b.features"))
+                        .drop($"b.features").drop($"b.id").drop($"b.label")
+                        .groupBy($"id", $"features", $"weight")
+                        .agg(min($"dist").alias("min_dist"),
+                            avg($"dist").alias("avg_dist"))
+            else
+                allExampleFeatures.alias("a")
+                        .crossJoin(labeledExampleFeatures.alias("b"))
+                        .withColumn("cosDist", cosineDistanceUdf($"a.features", $"b.features"))
+                        .drop($"b.features").drop($"b.id").drop($"b.label")
+                        .groupBy($"a.id", $"features", $"weight")
+                        .agg(min($"dist").alias("min_dist"),
+                            avg($"dist").alias("avg_dist"))
+        }
+        allExamplesWithSimilarity.show(5, false)
+//        val distDF = training2.withColumn( "euc", eucDisUdf(myScalaVec)($"features") )
+        allExample.join(data,"id").as[ExampleWithFeatures]
     }
+
+    override def getHyperParameters(): mutable.Map[Any, Any] = {
+        val paramsMap = mutable.Map[Any, Any]()
+        paramsMap
+    }
+}
+
+object SimilarityBasedSelector{
+    val logger = Logger.getLogger(SimilarityBasedSelector.getClass)
 }

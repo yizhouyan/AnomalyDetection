@@ -20,17 +20,14 @@
           "nClusters": 10,
           "sortByDist": true
         }
-    },
-    {
-        "name": "ActiveLearning",
-        "params":{
-
-        }
     }
   ],
   "exampleSelector": {
-        "name": "KDDCupData"
+        "name": "Identity",
+        "params": {
+          "numExamples": 50
+        }
   },
-  "allExamplesOutputFileName": "all_examples_output",
-  "selectedExamplesOutputFileName": "selected_examples_output"
+  "allExamplesOutputFileName": "results/all_examples_output",
+  "selectedExamplesOutputFileName": "results/selected_examples_output"
 }

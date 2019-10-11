@@ -1,25 +1,37 @@
 package selector.example_sources
 
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 import selector.common.{Example, LabeledExample, RegistryLookup, SharedParams}
 import selector.common.utils.ClassNameMapping
-
+import org.apache.spark.sql.functions._
+import utils.Utils
 /**
-  * Created by yizhouyan on 9/7/19.
-  */
+ * Created by yizhouyan on 9/7/19.
+ */
 object FetchExampleSources {
     def fetch(exampleSources: List[RegistryLookup], labeledExample: Dataset[LabeledExample])
              (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example] = {
-         // get all dataframes from different sources
+        // get all dataframes from different sources and union these results together
         import spark.implicits._
-        var allData: List[Dataset[Example]] = List()
+        var allData = spark.emptyDataset[Example]
+        var count = 0
         for (source <- exampleSources){
-            allData= allData :+ ClassNameMapping.mapClassNameToClass(source).asInstanceOf[ {
+            val curData: Dataset[Example] = ClassNameMapping.mapClassNameToClass(source).asInstanceOf[ {
                 def fetch(labeledExample: Dataset[LabeledExample])
                          (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example]
             }].fetch(labeledExample)
+            allData = {
+                if(count == 0)
+                    curData
+                else
+                    allData.union(curData)
+            }
+            count += 1
         }
-        // union these results together
-        spark.emptyDataset[Example]
+        // finally remove duplicates
+        allData = allData.groupBy("id")
+                .agg(max($"weight").alias("weight"),
+                    collect_list($"source").cast("string").alias("source")).as[Example]
+        allData
     }
 }

@@ -9,7 +9,6 @@ import org.apache.spark.sql.functions._
 import scala.collection.mutable
 
 case class AnomalyScoreParams(inputColName: String,
-                              filePath: Option[String],
                               outputColName: Option[String],
                               bottomThres: Double = 0.9,
                               topThres: Double = 1.0,
@@ -36,7 +35,7 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
         import spark.implicits._
         logger.info("Get Top Scored Anomalies: " + getName())
         // get data from input path
-        val data: Dataset[Feature] = ReadInputData.fetchInputData(params.filePath)
+        val data: Dataset[Feature] = ReadInputData.fetchInputData()
         var bottomThreshold = params.bottomThres
         var topThreshold = params.topThres
         if(params.usePercentile){
@@ -47,9 +46,11 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
         }
         logger.info("BottomThreshold = " + bottomThreshold + ", TopThreshold = " + topThreshold)
         labeledExample.createOrReplaceTempView("labeledExample")
-        val results = data.where($"results".getItem(params.inputColName) >= bottomThreshold
+        val results = data.drop($"dense").drop($"explanations")
+                .where($"results".getItem(params.inputColName) >= bottomThreshold
                 and $"results".getItem(params.inputColName) < topThreshold)
                 .withColumn("weight", $"results".getItem(params.inputColName))
+                .drop($"results")
                 .withColumn("source", lit(getName())).as[Example]
                 .where("id not in (select id from labeledExample)")
 

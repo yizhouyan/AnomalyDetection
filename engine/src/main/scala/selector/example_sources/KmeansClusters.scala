@@ -13,7 +13,6 @@ import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.sql.expressions.Window
 
 case class KmeansClustersParams(outputColName: Option[String],
-                                filePath: Option[String],
                                 numExamplesFromEachCluster: Int = 1,
                                 nClusters: Int = 1000,
                                 maxIter: Int = 100,
@@ -45,9 +44,9 @@ class KmeansClusters(params: KmeansClustersParams) extends AbstractExampleSource
         import spark.implicits._
         logger.info("Get examples from kmeans clusters...")
         // get data from input path
-        val data: Dataset[Feature] = ReadInputData.fetchInputData(params.filePath)
+        val data: Dataset[Feature] = ReadInputData.fetchInputData()
         val inputFeatureNames = data.head(1).apply(0).dense.keySet.toList
-        val dataset = data.withColumn("features", Converters.mapToVec(inputFeatureNames)($"dense"))
+        val dataset = data.select($"id", Converters.mapToVec(inputFeatureNames)($"dense").alias("features"))
         // Trains a k-means model.
         val kmeans = new KMeans()
                 .setFeaturesCol("features")

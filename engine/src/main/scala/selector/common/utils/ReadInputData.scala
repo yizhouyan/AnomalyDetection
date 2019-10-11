@@ -64,16 +64,9 @@ object ReadInputData {
         dataDF
     }
 
-    def fetchInputData(inputFilePath: Option[String])
+    def fetchInputData()
                       (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
-        val finalInputFilePath = {
-            if(inputFilePath.isDefined)
-                inputFilePath.get
-            else if(sharedParams.sharedFilePath.isDefined)
-                sharedParams.sharedFilePath.get
-            else
-                throw FileNameNotSetException("Input file name not set!")
-        }
+        val finalInputFilePath = sharedParams.sharedFilePath
         if(inputFileNameToData.contains(finalInputFilePath))
             return inputFileNameToData.get(finalInputFilePath).get
         val dataDF = readDataFromFile(finalInputFilePath)

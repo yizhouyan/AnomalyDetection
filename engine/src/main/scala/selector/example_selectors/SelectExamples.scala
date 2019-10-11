@@ -1,7 +1,7 @@
 package selector.example_selectors
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import selector.common.RegistryLookup
+import org.apache.spark.sql.{Dataset, SparkSession}
+import selector.common.{Example, LabeledExample, RegistryLookup, SharedParams}
 import selector.common.utils.ClassNameMapping
 
 /**
@@ -9,11 +9,12 @@ import selector.common.utils.ClassNameMapping
   */
 object SelectExamples {
     def fetch(exampleSelector: RegistryLookup,
-              spark: SparkSession,
-              allExamples: DataFrame,
-              labeledExample: DataFrame): DataFrame = {
-        return ClassNameMapping.mapClassNameToClass(exampleSelector).asInstanceOf[ {
-                def fetch(labeledExample: DataFrame, spark: SparkSession): DataFrame
-            }].fetch(labeledExample, spark)
+              allExamples: Dataset[Example],
+              labeledExample: Dataset[LabeledExample])
+             (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example] = {
+        ClassNameMapping.mapClassNameToClass(exampleSelector).asInstanceOf[ {
+                def fetch(allExamples: Dataset[Example], labeledExample: Dataset[LabeledExample])
+                         (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Example]
+            }].fetch(allExamples, labeledExample)
     }
 }

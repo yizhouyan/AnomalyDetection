@@ -29,8 +29,7 @@ object ClassNameMapping {
             case "AnomalyScore" => new AnomalyScore(jsonAst.convertTo[AnomalyScoreParams])
             case "KmeansClusters" => new KmeansClusters(jsonAst.convertTo[KmeansClustersParams])
             case "ActiveLearning" => new ActiveLearning(jsonAst.convertTo[ActiveLearningParams])
-            case "Identity" => new Identity
-            case "WeightedSelector" => new WeightedSelector(jsonAst.convertTo[WeightedSelectorParams])
+            case "Identity" => new Identity(jsonAst.convertTo[IdentityParams])
             case "SimilarityBasedSelector" => new SimilarityBasedSelector(jsonAst.convertTo[SimilaritySelectorParams])
         }
     }
