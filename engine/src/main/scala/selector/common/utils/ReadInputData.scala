@@ -64,8 +64,7 @@ object ReadInputData {
         dataDF
     }
 
-    def fetchInputData()
-                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
+    def fetchInputData()(implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
         val finalInputFilePath = sharedParams.sharedFilePath
         if(inputFileNameToData.contains(finalInputFilePath))
             return inputFileNameToData.get(finalInputFilePath).get

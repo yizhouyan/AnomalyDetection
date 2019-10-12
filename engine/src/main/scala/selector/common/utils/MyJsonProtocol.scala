@@ -13,7 +13,7 @@ object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val registryLookupFormat = jsonFormat2(RegistryLookup)
     implicit val mainWorkflowInputFormat = jsonFormat6(MainWorkflowInput)
     implicit val activeLearningParamsFormat = jsonFormat1(ActiveLearningParams)
-    implicit val similaritySelectorParamsFormat = jsonFormat4(SimilaritySelectorParams)
+    implicit val similaritySelectorParamsFormat = jsonFormat6(SimilaritySelectorParams)
     implicit val identityParamsFormat = jsonFormat1(IdentityParams)
 
     // set default values for anomaly score example source

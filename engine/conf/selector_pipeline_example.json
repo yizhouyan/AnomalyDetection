@@ -23,9 +23,14 @@
     }
   ],
   "exampleSelector": {
-        "name": "Identity",
+        "name": "SimilarityBasedSelector",
         "params": {
-          "numExamples": 50
+          "numExamples": 50,
+          "distFunction": "cosine",
+          "distThreshold": 0.2,
+          "nClusters": 10,
+          "maxIter": 10,
+          "seed": 1234
         }
   },
   "allExamplesOutputFileName": "results/all_examples_output",
