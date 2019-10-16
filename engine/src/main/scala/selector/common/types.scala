@@ -13,24 +13,17 @@ case class MainWorkflowInput(exampleSources: List[RegistryLookup],
                              allExamplesOutputFileName: Option[String] = None,
                              selectedExamplesOutputFileName: Option[String] = None,
                              labeledExamples: Option[RegistryLookup] = None,
-                             sharedFilePath: String)
-
-case class Feature(id: String, dense: Map[String, Double], results: Map[String, Double], explanations: Map[String, String])
+                             sharedFilePath: String,
+                             numFeaturesInData: Option[Int])
 
 case class Example(id: String,
                    source: String,
                    weight: Double)
-
-case class ExampleWithFeatures(id: String,
-                               source: String,
-                               weight: Double,
-                               dense: Map[String, Double],
-                               results: Map[String, Double],
-                               explanations: Map[String, String])
 
 case class LabeledExample(id: String, label: Double)
 
 case class SharedParams(sharedFilePath: String,
                         saveToDB: Boolean,
                         allExamplesOutputFileName: String,
-                        selectedExamplesOutputFileName: String)
+                        selectedExamplesOutputFileName: String,
+                        numFeaturesInData: Int = 0)

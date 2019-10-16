@@ -2,15 +2,15 @@ package selector.example_selectors
 
 import client.{IEvent, ModelStorageSyncer}
 import client.event.ExampleSelectorEvent
-import org.apache.spark.sql.{Dataset, SparkSession}
-import selector.common.{Example, ExampleWithFeatures, LabeledExample, SharedParams}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import selector.common.{Example, LabeledExample, SharedParams}
 
 /**
   * Created by yizhouyan on 9/7/19.
   */
 abstract class AbstractExampleSelector extends IEvent{
     def fetch(allExample: Dataset[Example], labeledExample: Dataset[LabeledExample])
-             (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[ExampleWithFeatures]
+             (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame
 
     def saveExampleSelectorEventsToDB(exampleSelector: IEvent,
                                       inputDataframe: Dataset[_],

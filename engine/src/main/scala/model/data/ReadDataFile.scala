@@ -17,7 +17,7 @@ import org.apache.log4j.Logger
 
 class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
     import ReadDataFile._
-    override def fetch()(implicit spark: SparkSession, sharedParams:SharedParams): Dataset[Feature] = {
+    override def fetch()(implicit spark: SparkSession, sharedParams:SharedParams): DataFrame= {
         logger.info("Create Dataset from file " + customizedFile.path)
         val inputFile: File = new File(customizedFile.path)
         var dataDF: DataFrame = null
@@ -51,17 +51,16 @@ class ReadDataFile(customizedFile: CustomizedFile) extends AbstractData{
                 throw FileTypeNotSupportedException("Input File Type not supported! We support parquet, json and csv files. ")
             }
         }
-        import spark.implicits._
-        var mapColumn: Column = map(dataDF.columns.tail.flatMap(name => Seq(lit(name), $"$name".cast("double"))): _*)
-        val newData: Dataset[Feature] = dataDF.select($"index" as "id", mapColumn as "dense")
-                .withColumn("results", typedLit(Map.empty[String, Double]))
-                .withColumn("explanations", typedLit(Map.empty[String, String]))
-                .as[Feature]
+        dataDF = dataDF.withColumnRenamed(dataDF.columns.head, "id")
+        val columnsCast = col(dataDF.columns.head) +: dataDF.columns.tail.map(name => col(name).cast("double"))
+        dataDF = dataDF.select(columnsCast :_*)
+
+        sharedParams.columeTracking.addToFeatures(dataDF.columns.tail.toList)
 
         if(sharedParams.saveToDB == true){
-            SyncableDataFramePaths.setPath(newData, customizedFile.path)
+            SyncableDataFramePaths.setPath(dataDF, customizedFile.path)
         }
-        newData
+        dataDF
     }
 }
 

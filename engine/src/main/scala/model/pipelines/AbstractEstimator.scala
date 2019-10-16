@@ -11,8 +11,8 @@ import scala.collection.mutable
   */
 abstract class AbstractEstimator extends IEvent{
     def fit(labels: Dataset[LabeledData], features: DataFrame, runExplanations: Boolean): Any
-    def transform(features: Dataset[Feature],
+    def transform(features: DataFrame,
                   stageNum: Int = -1,
                   model_params: Option[Any] = None)
-                 (implicit spark: SparkSession, sharedParams:SharedParams): Dataset[Feature]
+                 (implicit spark: SparkSession, sharedParams:SharedParams): DataFrame
 }

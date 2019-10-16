@@ -207,7 +207,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
      *                use VectorAssembler to generate a feature column.
      * @return A predicted dataframe with a prediction column which stores prediction values.
      */
-    def transform(dataset: Dataset[_], model: IForestModel, inputFeatureNames: List[String])
+    def transform(dataset: DataFrame, model: IForestModel, inputFeatureNames: List[String])
                  (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         val numSamples = dataset.count()
         val possibleMaxSamples =
@@ -232,11 +232,11 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             }
         }
         // append a score column
-        var result = dataset.withColumn("results", map_concat(col("results"),
-            map(lit(anomalyScoreCol), scoreUDF(col(featuresCol)))))
+        var result = dataset.withColumn(anomalyScoreCol, scoreUDF(col(featuresCol)))
+        sharedParams.columeTracking.addToResult(anomalyScoreCol)
         if(sharedParams.runExplanations){
-            result = result.withColumn("explanations", map_concat(col("explanations"),
-                    map(lit("isolation_forest_explanations"), explanationsUDF(col(featuresCol)))))
+            result = result.withColumn(anomalyScoreCol + "_explanation", explanationsUDF(col(featuresCol)))
+            sharedParams.columeTracking.addToResult(anomalyScoreCol + "_explanation")
         }
         result
     }

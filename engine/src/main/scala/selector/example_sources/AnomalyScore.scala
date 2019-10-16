@@ -2,7 +2,7 @@ package selector.example_sources
 import client.SyncableDataFramePaths
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{Dataset, SparkSession}
-import selector.common.{Example, Feature, LabeledExample, SharedParams}
+import selector.common.{Example, LabeledExample, SharedParams}
 import selector.common.utils.ReadInputData
 import org.apache.spark.sql.functions._
 
@@ -35,29 +35,29 @@ class AnomalyScore(params: AnomalyScoreParams) extends AbstractExampleSource{
         import spark.implicits._
         logger.info("Get Top Scored Anomalies: " + getName())
         // get data from input path
-        val data: Dataset[Feature] = ReadInputData.fetchInputData()
+        val data = ReadInputData.fetchInputData()
         var bottomThreshold = params.bottomThres
         var topThreshold = params.topThres
         if(params.usePercentile){
-            val thresholds = data.selectExpr("approx_percentile(results['" + params.inputColName + "'], " +
+            val thresholds = data.selectExpr("approx_percentile(" + params.inputColName + ", " +
                     "array("+ params.bottomThres + "," + params.topThres + "))").first().getAs[mutable.WrappedArray[Double]](0)
             bottomThreshold = thresholds.apply(0)
             topThreshold = thresholds.apply(1)
         }
         logger.info("BottomThreshold = " + bottomThreshold + ", TopThreshold = " + topThreshold)
         labeledExample.createOrReplaceTempView("labeledExample")
-        val results = data.drop($"dense").drop($"explanations")
-                .where($"results".getItem(params.inputColName) >= bottomThreshold
-                and $"results".getItem(params.inputColName) < topThreshold)
-                .withColumn("weight", $"results".getItem(params.inputColName))
-                .drop($"results")
-                .withColumn("source", lit(getName())).as[Example]
+        val results = data.select($"id", col(params.inputColName))
+                .where(col(params.inputColName) >= bottomThreshold
+                and col(params.inputColName) < topThreshold)
+                .withColumn("weight", col(params.inputColName))
+                .withColumn("source", lit(getName()))
+                .drop(col(params.inputColName))
+                .as[Example]
                 .where("id not in (select id from labeledExample)")
-
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
-            SyncableDataFramePaths.setPath(results, sharedParams.allExamplesOutputFileName)
+            SyncableDataFramePaths.setPath(results.toDF, sharedParams.allExamplesOutputFileName)
             saveExampleSelectorEventsToDB(this,
                 data,
                 results,

@@ -33,7 +33,8 @@ object SupervisedLearning{
             case Some(x) => x
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
         }
-        implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
+        implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath,
+            new ColumnTracking)
 
         val labeledData = FetchLabels.fetch(supervisedWorkflowInput.labeledData, spark)
         val examples = FetchDataExample.fetch(supervisedWorkflowInput.data)

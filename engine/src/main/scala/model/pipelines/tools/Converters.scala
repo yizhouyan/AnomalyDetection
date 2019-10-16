@@ -1,6 +1,8 @@
 package model.pipelines.tools
 
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.linalg.Vectors
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.udf
 
@@ -22,5 +24,16 @@ object Converters {
             Vectors.dense(resultArr.toArray)
         })
         mapToVec
+    }
+
+    def createDenseVector(inputFeatureNames: List[String], inputFeatures: DataFrame)
+                         (implicit spark: SparkSession): DataFrame = {
+        import spark.implicits._
+        val assembler = new VectorAssembler()
+                .setInputCols(inputFeatureNames.toArray)
+                .setOutputCol("featureVec")
+        val featuresForIF = assembler.transform(inputFeatures)
+        val toDense = udf((v: org.apache.spark.ml.linalg.Vector) => v.toDense)
+        featuresForIF.withColumn("featureVec", toDense($"featureVec"))
     }
 }

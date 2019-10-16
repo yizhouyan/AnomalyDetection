@@ -2,10 +2,10 @@ package selector.example_selectors
 
 import model.pipelines.tools.Converters
 import org.apache.log4j.Logger
-import org.apache.spark.ml.linalg.{DenseVector, Vector, Vectors}
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.ml.linalg.{Vector, Vectors}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import selector.common.utils.ReadInputData
-import selector.common.{Example, ExampleWithFeatures, Feature, LabeledExample, SharedParams}
+import selector.common.{Example, LabeledExample, SharedParams}
 import org.apache.spark.sql.functions._
 import breeze.linalg.{norm, DenseVector => BDV}
 import org.apache.spark.ml.clustering.KMeans
@@ -53,19 +53,20 @@ class SimilarityBasedSelector(params: SimilaritySelectorParams) extends Abstract
     }
 
     override def fetch(allExample: Dataset[Example], labeledExample: Dataset[LabeledExample])
-                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[ExampleWithFeatures] = {
+                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         import spark.implicits._
         logger.info("Example Selector:" + getName())
-        val data: Dataset[Feature] = ReadInputData.fetchInputData()
-        val inputFeatureNames = data.head(1).apply(0).dense.keySet.toList
+        var data: DataFrame = ReadInputData.fetchInputData()
+        val inputFeatureNames = data.columns.tail.toList.slice(0, sharedParams.numFeaturesInData)
+        logger.info("Input Feature Names: " + inputFeatureNames.mkString(","))
+        data = Converters.createDenseVector(inputFeatureNames, data)
+
         // get feature vectors of all examples
         val allExampleFeatures = allExample.join(data,"id")
-                .withColumn("features", Converters.mapToVec(inputFeatureNames)($"dense"))
-                .drop("dense").drop("results").drop("explanations")
+
         // get feature vectors of labeled examples
         val labeledExampleFeatures = labeledExample.join(data,"id")
-                .withColumn("features", Converters.mapToVec(inputFeatureNames)($"dense"))
-                .drop("dense").drop("results").drop("explanations")
+
         println("All Examples Features Count: " + allExampleFeatures.count())
         println("LabeledExampleFeatures Count: " + labeledExampleFeatures.count())
 
@@ -85,13 +86,13 @@ class SimilarityBasedSelector(params: SimilaritySelectorParams) extends Abstract
                 if(params.distFunction.equals("euclidean"))
                     allExampleFeatures.alias("a")
                             .crossJoin(labeledExampleFeatures.alias("b"))
-                            .withColumn("dist", euclideanDistanceUdf($"a.features", $"b.features"))
+                            .withColumn("dist", euclideanDistanceUdf($"a.featureVec", $"b.featureVec"))
                 else
                     allExampleFeatures.alias("a")
                             .crossJoin(labeledExampleFeatures.alias("b"))
-                            .withColumn("dist", cosineDistanceUdf($"a.features", $"b.features"))
-                }.drop($"b.features").drop($"b.id").drop($"b.label")
-                .groupBy($"id", $"features", $"weight",$"source")
+                            .withColumn("dist", cosineDistanceUdf($"a.featureVec", $"b.featureVec"))
+                }.drop($"b.featureVec").drop($"b.id").drop($"b.label")
+                .groupBy($"id", $"featureVec", $"weight",$"source")
                 .agg(min($"dist").alias("min_dist"),
                     avg($"dist").alias("avg_dist"))
                 .filter($"min_dist" > params.distThreshold)
@@ -108,7 +109,7 @@ class SimilarityBasedSelector(params: SimilaritySelectorParams) extends Abstract
             }
         }
         val kmeans = new KMeans()
-                .setFeaturesCol("features")
+                .setFeaturesCol("featureVec")
                 .setPredictionCol("cluster")
                 .setMaxIter(params.maxIter)
                 .setDistanceMeasure(params.distFunction)
@@ -117,18 +118,18 @@ class SimilarityBasedSelector(params: SimilaritySelectorParams) extends Abstract
         val model = kmeans.fit(allExamplesWithSimilarity)
         numClusters = model.clusterCenters.length
         // Make predictions
-        val predictions = model.transform(allExamplesWithSimilarity).drop("features")
+        val predictions = model.transform(allExamplesWithSimilarity).drop("featureVec")
 
         val finalSelectedExamples = predictions.join(data,"id")
                 .withColumn("row_number", row_number.over(Window.partitionBy($"cluster").orderBy($"weight")))
                 .orderBy(asc("row_number"), desc("weight"))
-                .drop("row_number").drop("cluster")
+                .drop("row_number").drop("cluster").drop("featureVec")
         if(params.numExamples.isDefined) {
             numExamples = params.numExamples.get
-            finalSelectedExamples.limit(params.numExamples.get).as[ExampleWithFeatures]
+            finalSelectedExamples.limit(params.numExamples.get)
         }else{
             numExamples = numExampleCandidates.toInt
-            finalSelectedExamples.as[ExampleWithFeatures]
+            finalSelectedExamples
         }
     }
 

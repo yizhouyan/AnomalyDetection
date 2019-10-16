@@ -47,9 +47,12 @@ object ExampleSelector{
             case Some(x) => x
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "selected_examples")
         }
-
+        val numFeaturesInData: Int = mainWorkflowInput.numFeaturesInData match{
+            case Some(x) => x
+            case None => 0
+        }
         implicit val sharedParams: SharedParams = SharedParams(mainWorkflowInput.sharedFilePath,
-                saveToDB, allExamplesOutputFileName,selectedExamplesOutputFileName
+                saveToDB, allExamplesOutputFileName,selectedExamplesOutputFileName, numFeaturesInData
             )
         import spark.implicits._
         // get labeled examples
@@ -65,7 +68,7 @@ object ExampleSelector{
         val allDataCount = allData.count()
         logger.info("All data size: " + allDataCount)
         if(sharedParams.saveToDB)
-            SyncableDataFramePaths.setPath(allData, sharedParams.allExamplesOutputFileName)
+            SyncableDataFramePaths.setPath(allData.toDF, sharedParams.allExamplesOutputFileName)
         // save all data examples to output file
         logger.info("Write all data examples to output file...")
         allData.coalesce(math.ceil(allDataCount/5000.0).toInt).write.mode(SaveMode.Overwrite).parquet(sharedParams.allExamplesOutputFileName)

@@ -5,14 +5,14 @@ import java.io.File
 import client.SyncableDataFramePaths
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import selector.common.{Feature, SharedParams}
+import selector.common.SharedParams
 import utils.{FileNameNotSetException, FileTypeNotSupportedException, FileUtil, NoFileUnderInputFolderException}
 
 import scala.collection.mutable
 
 object ReadInputData {
     val logger = Logger.getLogger(this.getClass)
-    val inputFileNameToData = new mutable.HashMap[String, Dataset[Feature]]
+    val inputFileNameToData = new mutable.HashMap[String, DataFrame]
 
     def detectFileType(allFileNames: Array[String]): String ={
         for (filename <- allFileNames){
@@ -64,17 +64,16 @@ object ReadInputData {
         dataDF
     }
 
-    def fetchInputData()(implicit spark: SparkSession, sharedParams: SharedParams): Dataset[Feature] = {
+    def fetchInputData()(implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         val finalInputFilePath = sharedParams.sharedFilePath
         if(inputFileNameToData.contains(finalInputFilePath))
             return inputFileNameToData.get(finalInputFilePath).get
         val dataDF = readDataFromFile(finalInputFilePath)
-        import spark.implicits._
-        val newData: Dataset[Feature] = dataDF.as[Feature]
-        inputFileNameToData.put(finalInputFilePath, newData)
+
+        inputFileNameToData.put(finalInputFilePath, dataDF)
         if(sharedParams.saveToDB == true){
-            SyncableDataFramePaths.setPath(newData, finalInputFilePath)
+            SyncableDataFramePaths.setPath(dataDF, finalInputFilePath)
         }
-        newData
+        dataDF
     }
 }

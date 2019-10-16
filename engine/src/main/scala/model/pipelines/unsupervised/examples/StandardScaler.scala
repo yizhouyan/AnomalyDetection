@@ -6,7 +6,7 @@ import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import model.pipelines.tools.Statistics
 import org.apache.log4j.Logger
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
 
@@ -28,19 +28,20 @@ case class StandardScalerParams(inputFeatureNames: Option[List[String]] ,
  */
 class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int = -1) extends AbstractUnsupervisedAlgo{
     import StandardScaler._
-    override def transform(features: Dataset[Feature],
+    override def transform(features: DataFrame,
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           sharedParams:SharedParams): Dataset[Feature] = {
+                           sharedParams:SharedParams): DataFrame = {
         val inputFeatureNames: List[String] = standardScalerParams.inputFeatureNames match{
             case Some(x) => x
-            case None => features.head(1).apply(0).dense.keySet.toList
+            case None => sharedParams.columeTracking.getFeatureCols()
         }
         val outputFeatureNames: List[String] = standardScalerParams.outputFeatureNames match{
             case Some(x) => x
             case None => inputFeatureNames.map(_ + "_scaled")
         }
+
         logger.info("Input Feature Names: " + inputFeatureNames)
         logger.info("Output Feature Names: " + outputFeatureNames)
         if (inputFeatureNames.length != outputFeatureNames.length)
@@ -53,14 +54,12 @@ class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int =
         Statistics.std(features, inputFeatureNames).createOrReplaceTempView("std")
 
         import spark.implicits._
-        var newDF:Dataset[Feature] = spark.sqlContext.sql("select id, map_from_arrays(ARRAY("
-                + outputFeatureNames.map(x => "'" + x + "'").mkString(",")
-                +  "), ARRAY("
+        var newDF:DataFrame = spark.sqlContext.sql("select id, "
                 + inputFeatureNames.zipWithIndex.map{case(e, i) =>
-            "(dense['" + e + "']-feature_avg["+ (i) + "])/feature_std[" + (i) + "]"}.mkString(",")
-                + ")) AS dense, results, explanations " +
-                "from features a CROSS JOIN avg b CROSS JOIN std c")
-                .withColumn("explanations", typedLit(Map.empty[String, String])).as[Feature]
+            "(" + e + "-feature_avg["+ (i) + "])/feature_std[" + (i) + "] AS " + outputFeatureNames.apply(i)}.mkString(",") +
+                " from features a CROSS JOIN avg b CROSS JOIN std c")
+        sharedParams.columeTracking.resetFeatureCols()
+        sharedParams.columeTracking.addToFeatures(outputFeatureNames)
         // if saveToDB is set to true, save the results to Storage
         newDF = newDF.coalesce(sharedParams.numPartitions)
         if(sharedParams.saveToDB == true){

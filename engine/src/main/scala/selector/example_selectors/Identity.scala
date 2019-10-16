@@ -2,8 +2,8 @@ package selector.example_selectors
 
 import client.SyncableDataFramePaths
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SparkSession}
-import selector.common.{Example, ExampleWithFeatures, Feature, LabeledExample, SharedParams}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import selector.common.{Example, LabeledExample, SharedParams}
 import org.apache.spark.sql.functions._
 import selector.common.utils.ReadInputData
 
@@ -24,10 +24,9 @@ class Identity(params: IdentityParams) extends AbstractExampleSelector{
     }
 
     override def fetch(allExample: Dataset[Example], labeledExample: Dataset[LabeledExample])
-                      (implicit spark: SparkSession, sharedParams: SharedParams): Dataset[ExampleWithFeatures] = {
-        import spark.implicits._
+                      (implicit spark: SparkSession, sharedParams: SharedParams): DataFrame = {
         logger.info("Use " + getName() + " as example selector")
-        val data: Dataset[Feature] = ReadInputData.fetchInputData()
+        val data: DataFrame = ReadInputData.fetchInputData()
         val finalResults = {
             if(params.numExamples.isDefined) {
                 numSamples = params.numExamples.get
@@ -36,7 +35,7 @@ class Identity(params: IdentityParams) extends AbstractExampleSelector{
                 numSamples = allExample.count().toInt
                 allExample
             }
-        }.join(data, "id").as[ExampleWithFeatures].orderBy(desc("weight"))
+        }.join(data, "id").orderBy(desc("weight"))
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")

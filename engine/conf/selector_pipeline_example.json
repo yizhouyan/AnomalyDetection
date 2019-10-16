@@ -4,6 +4,7 @@
     "params": "data/kdd_09_labels.csv"
   },
   "sharedFilePath": "results/kdd_09_data_test_unsupervised_results",
+  "numFeaturesInData": 34,
   "exampleSources": [
     {
         "name": "AnomalyScore",
@@ -23,15 +24,15 @@
     }
   ],
   "exampleSelector": {
-        "name": "SimilarityBasedSelector",
-        "params": {
-          "numExamples": 50,
-          "distFunction": "cosine",
-          "distThreshold": 0.2,
-          "nClusters": 10,
-          "maxIter": 10,
-          "seed": 1234
-        }
+    "name": "SimilarityBasedSelector",
+    "params": {
+      "numExamples": 50,
+      "distFunction": "cosine",
+      "distThreshold": 0.2,
+      "nClusters": 10,
+      "maxIter": 10,
+      "seed": 1234
+    }
   },
   "allExamplesOutputFileName": "results/all_examples_output",
   "selectedExamplesOutputFileName": "results/selected_examples_output"

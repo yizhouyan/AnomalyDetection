@@ -5,7 +5,7 @@ import model.pipelines.tools.Converters
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import selector.common.utils.ReadInputData
-import selector.common.{Example, Feature, LabeledExample, SharedParams}
+import selector.common.{Example, LabeledExample, SharedParams}
 import org.apache.spark.sql.functions._
 
 import scala.collection.mutable
@@ -44,12 +44,13 @@ class KmeansClusters(params: KmeansClustersParams) extends AbstractExampleSource
         import spark.implicits._
         logger.info("Get examples from kmeans clusters...")
         // get data from input path
-        val data: Dataset[Feature] = ReadInputData.fetchInputData()
-        val inputFeatureNames = data.head(1).apply(0).dense.keySet.toList
-        val dataset = data.select($"id", Converters.mapToVec(inputFeatureNames)($"dense").alias("features"))
+        val data = ReadInputData.fetchInputData()
+        val inputFeatureNames = data.columns.tail.toList.slice(0, sharedParams.numFeaturesInData)
+        logger.info("Input Feature Names: " + inputFeatureNames.mkString(","))
+        val dataset: DataFrame = Converters.createDenseVector(inputFeatureNames, data).select("id", "featureVec")
         // Trains a k-means model.
         val kmeans = new KMeans()
-                .setFeaturesCol("features")
+                .setFeaturesCol("featureVec")
                 .setPredictionCol("cluster")
                 .setMaxIter(params.maxIter)
                 .setDistanceMeasure(params.distanceMeasure)
@@ -58,7 +59,7 @@ class KmeansClusters(params: KmeansClustersParams) extends AbstractExampleSource
         val model = kmeans.fit(dataset)
 
         // Make predictions
-        val predictions = model.transform(dataset).drop("features")
+        val predictions = model.transform(dataset).drop("featureVec")
         val clusterCnt = predictions.groupBy($"cluster").agg(count($"id").alias("cluster_cnt"))
         val clusterWeights = clusterCnt.crossJoin(clusterCnt.select(max($"cluster_cnt").alias("max_cnt")))
                 .selectExpr("cluster", "cluster_cnt * 1.0/max_cnt AS weight")
@@ -74,7 +75,7 @@ class KmeansClusters(params: KmeansClustersParams) extends AbstractExampleSource
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")
-            SyncableDataFramePaths.setPath(results, sharedParams.allExamplesOutputFileName)
+            SyncableDataFramePaths.setPath(results.toDF, sharedParams.allExamplesOutputFileName)
             saveExampleSelectorEventsToDB(this,
                 data,
                 results,

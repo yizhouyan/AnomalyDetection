@@ -11,7 +11,7 @@ import spray.json.{DefaultJsonProtocol, JsBoolean, JsNumber, JsObject, JsString,
 
 object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val registryLookupFormat = jsonFormat2(RegistryLookup)
-    implicit val mainWorkflowInputFormat = jsonFormat6(MainWorkflowInput)
+    implicit val mainWorkflowInputFormat = jsonFormat7(MainWorkflowInput)
     implicit val activeLearningParamsFormat = jsonFormat1(ActiveLearningParams)
     implicit val similaritySelectorParamsFormat = jsonFormat6(SimilaritySelectorParams)
     implicit val identityParamsFormat = jsonFormat1(IdentityParams)

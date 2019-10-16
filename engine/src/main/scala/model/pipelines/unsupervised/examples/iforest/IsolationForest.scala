@@ -1,11 +1,14 @@
 package model.pipelines.unsupervised.examples.iforest
 
 import client.SyncableDataFramePaths
-import model.common.{Feature, SharedParams}
+import model.common.SharedParams
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import model.pipelines.tools.Converters
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.linalg.Vectors
+import org.apache.spark.sql.functions.typedLit
 
 import scala.collection.mutable
 
@@ -52,30 +55,29 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
     var inputFeatureNames: List[String] = List()
 
     import IsolationForest._
-    override def transform(features: Dataset[Feature],
+    override def transform(features: DataFrame,
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           sharedParams:SharedParams): Dataset[Feature] = {
+                           sharedParams:SharedParams): DataFrame = {
         this.inputFeatureNames = isolationForestParams.inputFeatureNames match{
             case Some(x) => x
             case None => {
-                features.head(1).apply(0).dense.keySet.toList
+                sharedParams.columeTracking.getFeatureCols()
             }
         }
         logger.info("Input Feature Names: " + inputFeatureNames)
         import spark.implicits._
-        val featuresForIF = features.withColumn("featureVec", Converters.mapToVec(inputFeatureNames)($"dense"))
+        var featuresForIF: DataFrame = Converters.createDenseVector(inputFeatureNames, features)
         val iforest = new IForest(isolationForestParams)
         logger.info("Start fitting isolation forest models....")
         val model = iforest.fit(featuresForIF)
         logger.info("Isolation forest model fitted.... ")
         logger.info("Start transforming dataset on isolation forest models....")
         val results = iforest.transform(featuresForIF, model, inputFeatureNames)
-                .drop($"featureVec").as[Feature]
+                .drop($"featureVec")
                 .coalesce(sharedParams.numPartitions)
         logger.info("Finish transforming on isolaiton forest models")
-
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true) {
             logger.info("Save model to Storage")

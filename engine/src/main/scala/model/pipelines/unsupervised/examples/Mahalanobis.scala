@@ -5,7 +5,7 @@ import model.pipelines.tools.{Converters, Statistics}
 import model.pipelines.tools.DefaultTools.generateSubspaces
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.ml.linalg.Vector
 import breeze.numerics.sqrt
 import client.SyncableDataFramePaths
@@ -51,15 +51,15 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
     var inputFeatureNames: List[String] = List()
     var subspacesList: List[List[String]] = List()
     import Mahalanobis._
-    override def transform(features: Dataset[Feature],
+    override def transform(features: DataFrame,
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           sharedParams:SharedParams): Dataset[Feature] = {
+                           sharedParams:SharedParams): DataFrame = {
         this.inputFeatureNames = params.inputFeatureNames match{
             case Some(x) => x
             case None => {
-                features.head(1).apply(0).dense.keySet.toList
+                sharedParams.columeTracking.getFeatureCols()
             }
         }
         logger.info("Input Feature Names: " + inputFeatureNames)
@@ -71,7 +71,7 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
                 List(inputFeatureNames)
         }
         import spark.implicits._
-        var results = features.toDF()
+        var results = features
         val allOutputColNames = new ListBuffer[String]
         for ((subspace:List[String], index:Int) <- subspacesList.zipWithIndex) {
             logger.info("Processing Subspace: " + subspace)
@@ -80,7 +80,7 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
             val explanationColName = "mahalanobis_explaination_subspace_" + index
             allOutputColNames += resultsColName
             val invCov = Statistics.inv_cov(results, subspace)
-            results = results.withColumn("featureVec", Converters.mapToVec(subspace)($"dense"))
+            results = Converters.createDenseVector(subspace, results)
             val mean = breeze.linalg.DenseVector(Statistics.avg(results, subspace)
                     .head().get(0).asInstanceOf[mutable.WrappedArray[Double]].toArray)
             val invCovBroadCast = spark.sparkContext.broadcast(invCov)
@@ -111,15 +111,16 @@ class Mahalanobis(params: MahalanobisParams, stageNum: Int = -1)
                     featureImportance.argSort.reverse.take(numExplanations).map(x => subspace(x)).mkString(",")
                 }
             }
-            results = results.withColumn("results", map_concat(col("results"),
-                        map(lit(resultsColName), mahalanobisDistUDF($"featureVec"))))
+
+            results = results.withColumn(resultsColName, mahalanobisDistUDF($"featureVec"))
+            sharedParams.columeTracking.addToResult(resultsColName)
             if(sharedParams.runExplanations){
-                results = results.withColumn("explanations", map_concat(col("explanations"),
-                    map(lit(explanationColName), mahalanobisExplainUDF($"featureVec"))))
+                results = results.withColumn(explanationColName, mahalanobisExplainUDF($"featureVec"))
+                sharedParams.columeTracking.addToExplain(explanationColName)
             }
             results = results.drop($"featureVec")
         }
-        val finalRes = results.as[Feature].coalesce(sharedParams.numPartitions)
+        val finalRes = results.coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
             logger.info("Save model to Storage")

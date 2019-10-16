@@ -4,7 +4,7 @@ import utils.Utils._
 import client.{ModelStorageSyncer, NewExperimentRun, NewOrExistingProject}
 import conf.InputConfigs
 import model.common.utils.ConfigParser
-import model.common.{SharedParams, UnsupervisedWorkflowInput, utils}
+import model.common.{ColumnTracking, SharedParams, UnsupervisedWorkflowInput, utils}
 import org.apache.spark.sql.SparkSession
 import spray.json._
 import model.common.utils.MyJsonProtocol._
@@ -41,7 +41,8 @@ object UnsupervisedLearning{
             case None => getRandomFilePath(InputConfigs.outputPathPrefixConf, "final_output")
         }
         val runExplanations: Boolean = unsupervisedWorkflowInput.runExplanations
-        implicit val sharedParams:SharedParams = new SharedParams(saveToDB, runExplanations, finalOutputPath)
+        implicit val sharedParams:SharedParams = SharedParams(saveToDB,
+            runExplanations, finalOutputPath, new ColumnTracking)
 
         // read data from training
         val data = FetchDataExample.fetch(unsupervisedWorkflowInput.data)

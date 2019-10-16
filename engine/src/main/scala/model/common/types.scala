@@ -28,13 +28,12 @@ case class SupervisedWorkflowInput(labeledData: RegistryLookup,
 
 case class CustomizedFile(path: String, fileType: String)
 
-case class Feature(id: String, dense: Map[String, Double], results: Map[String, Double], explanations: Map[String, String])
-
 case class LabeledData(id: String, label: Float)
 
 case class SharedParams(saveToDB: Boolean,
                         runExplanations: Boolean,
                         outputFilePath: String,
+                        columeTracking: ColumnTracking,
                         var numPartitions: Int = 100,
                         numFeaturesForExplain: Int = 3)
 

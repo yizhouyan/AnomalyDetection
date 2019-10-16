@@ -1,6 +1,6 @@
 package client
 
-import org.apache.spark.sql.{Dataset}
+import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
   * Created by yizhouyan on 9/30/19.
@@ -20,7 +20,7 @@ object SyncableDataFrame {
         val columns = if (id != -1) {
             Seq[anomalydetection.DataFrameColumn]()
         } else {
-            df.toDF().schema.map(field => anomalydetection.DataFrameColumn(field.name, field.dataType.simpleString))
+            df.toDF.schema.map(field => anomalydetection.DataFrameColumn(field.name, field.dataType.simpleString))
         }
 
         val modeldbDf = anomalydetection.DataFrame(

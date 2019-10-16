@@ -3,7 +3,7 @@ package model.pipelines
 import model.common.utils.ClassNameMapping
 import model.common._
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 
 /**
   * Created by yizhouyan on 9/7/19.
@@ -11,7 +11,7 @@ import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 object Pipelines {
     val logger = Logger.getLogger(Pipelines.getClass)
     def fit(labels: Dataset[LabeledData],
-            features: Dataset[Feature],
+            features: DataFrame,
             pipelines: PipelineConfig,
             runExplanations: Boolean): Unit = {
         // To start off, we create empty features for each example
@@ -34,7 +34,7 @@ object Pipelines {
                 curModelParams = curModelParams :+
                         estimators(i)(j).asInstanceOf[ {
                             def fit(labels: Dataset[LabeledData],
-                                    features: Dataset[Feature],
+                                    features: DataFrame,
                                     runExplanations: Boolean): Any
                         }].fit(labels, features, runExplanations)
             }
@@ -44,7 +44,7 @@ object Pipelines {
             var transformResults: List[Any] = List()
             for (j <- 0 until pipelines.stages(i).estimators.length){
                 transformResults = transformResults :+ estimators(i)(j).asInstanceOf[ {
-                    def transform(features: Dataset[Feature],
+                    def transform(features: DataFrame,
                                   runExplanations: Boolean,
                                   model_params: Option[Any] = None): Unit}]
                         .transform(features, runExplanations)
@@ -55,12 +55,12 @@ object Pipelines {
         }
     }
 
-    def transform(inputFeatures: Dataset[Feature],
+    def transform(inputFeatures: DataFrame,
                   pipelines: PipelineConfig,
                   model_params: Option[List[List[Any]]]=None)
                  (implicit spark: SparkSession,
                   sharedParams:SharedParams): Unit = {
-        var features: Dataset[Feature] = inputFeatures
+        var features: DataFrame = inputFeatures
         // lookup all the estimators
         var estimators: List[List[Any]] = List()
         for (i <- 0 until pipelines.stages.length){
@@ -75,11 +75,11 @@ object Pipelines {
         for (i <- 0 until pipelines.stages.length){
             for (j <- 0 until pipelines.stages(i).estimators.length){
                 features = estimators(i)(j).asInstanceOf[ {
-                    def transform(features: Dataset[Feature],
+                    def transform(features: DataFrame,
                                   stageNum: Int = -1,
                                   model_params: Option[Any] = None)
                                  (implicit spark: SparkSession,
-                                  sharedParams:SharedParams): Dataset[Feature]
+                                  sharedParams:SharedParams): DataFrame
                 }].transform(features, i)
             }
         }

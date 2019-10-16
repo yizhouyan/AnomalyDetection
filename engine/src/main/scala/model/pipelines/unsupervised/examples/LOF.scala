@@ -1,18 +1,18 @@
 package model.pipelines.unsupervised.examples
 
 import client.SyncableDataFramePaths
-import model.common.{Feature, SharedParams, SubspaceParams}
+import model.common.{SharedParams, SubspaceParams}
 import model.pipelines.tools.Converters
 import model.pipelines.tools.DefaultTools.generateSubspaces
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import model.pipelines.tools.KNN._
 import org.apache.spark.sql.expressions.Window
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import org.apache.spark.sql.functions.{arrays_zip, avg, col, explode, expr, lit, map, map_concat, max, row_number}
+import org.apache.spark.sql.functions.{arrays_zip, avg, col, explode, expr, max, row_number}
 import org.apache.spark.sql.types.DataTypes
 /**
   * Created by yizhouyan on 9/7/19.
@@ -44,15 +44,15 @@ class LOF(params: LOFParams, stageNum: Int = -1)
     var inputFeatureNames: List[String] = List()
     var subspacesList: List[List[String]] = List()
     import LOF._
-    override def transform(features: Dataset[Feature],
+    override def transform(features: DataFrame,
                            stageNum: Int = -1,
                            model_params: Option[Any] = None)
                           (implicit spark: SparkSession,
-                           sharedParams:SharedParams): Dataset[Feature] = {
+                           sharedParams:SharedParams): DataFrame = {
         this.inputFeatureNames = params.inputFeatureNames match{
             case Some(x) => x
             case None => {
-                features.head(1).apply(0).dense.keySet.toList
+                sharedParams.columeTracking.getFeatureCols()
             }
         }
         logger.info("Input Feature Names: " + inputFeatureNames)
@@ -71,7 +71,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
         val allOutputColNames = new ListBuffer[String]
         for ((subspace:List[String], index:Int) <- subspacesList.zipWithIndex) {
             logger.info("Processing Subspace: " + subspace)
-            val featuresForKNN = results.withColumn("featureVec", Converters.mapToVec(subspace)($"dense"))
+            val featuresForKNN: DataFrame = Converters.createDenseVector(subspace, results)
             val knnResults = computeKNN(featuresForKNN, maxK)
             val flatten_knn_table = knnResults.withColumn("knn", explode(arrays_zip($"neighbors", $"distances")))
                     .select($"id", $"knn.neighbors.id".alias("knn_id"), $"knn.distances".alias("dist"))
@@ -108,11 +108,11 @@ class LOF(params: LOFParams, stageNum: Int = -1)
                 results = results.alias("a")
                         .join(lofScores.alias("b"), $"a.id" === $"b.id", "left")
                         .drop($"b.id")
-                        .withColumn("results", map_concat(col("results"),
-                            map(lit(resultsColName), col("lof"))))
-                        .drop("lof").as[Feature]
+                        .withColumn(resultsColName, col("lof"))
+                        .drop("lof")
             }
         }
+        sharedParams.columeTracking.addToResult(allOutputColNames.toList)
         results = results.coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
         if(sharedParams.saveToDB == true){
