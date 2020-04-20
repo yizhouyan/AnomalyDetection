@@ -55,15 +55,8 @@
     ./start_server.sh [thrift_version] &
     # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
 
-    cd [path_to_system]/client/python
-    ./build_client.sh
-
     # build spark.ml client library
-    cd [path_to_system]/client/scala/libs/spark.ml
+    cd [path_to_system]/engine
     ./build_client.sh
-
-    # start the frontend
-    cd [path_to_system]/frontend
-    ./start_frontend.sh & # the frontend will now be available in http://localhost:3000/
 ```
 
