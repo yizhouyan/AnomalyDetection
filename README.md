@@ -43,20 +43,45 @@
     In the following, **[path_to_system]** refers to the directory into which you have cloned the anomaly detection system
      repo and **[thrift_version]** is 0.9.3 or 0.10.0 depending on your thrift version (check by running ```thrift -version```).
 
-```bash
-    # run the script to set up the sqlite and the mongodb databases that modeldb will use
-    # this also starts mongodb
-    # ***IMPORTANT NOTE: This clears any previous modeldb databases. This should only be done once.***
-    cd [path_to_system]/server/codegen
-    ./gen_sqlite.sh
+    ```bash
+        # run the script to set up the sqlite and the mongodb databases that modeldb will use
+        # this also starts mongodb
+        # ***IMPORTANT NOTE: This clears any previous modeldb databases. This should only be done once.***
+        cd [path_to_system]/server/codegen
+        ./gen_sqlite.sh
+    
+        # build and start the server
+        cd ..
+        ./start_server.sh [thrift_version] &
+        # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
+    
+        # build spark.ml client library
+        cd [path_to_system]/engine
+        ./build_client.sh
+    ```
 
-    # build and start the server
-    cd ..
-    ./start_server.sh [thrift_version] &
-    # NOTE: if you are building the project in eclipse, you may need to uncomment the pluginManagement tags in pom.xml located in the server directory
-
-    # build spark.ml client library
-    cd [path_to_system]/engine
-    ./build_client.sh
-```
-
+4. **Run**
+    
+    **Unsupervised Anomaly Detection**
+    ```bash
+       spark-submit --class model.workflows.UnsupervisedLearning --master [master] [jar_file_path] --json [pipeline_config] --conf [project_config]
+    ```
+    **[pipeline_config]** Example in conf/unsupervised_pipeline_example.json 
+    **[project_config]** Example in conf/config.properties 
+    
+    We currently support four effective anomaly detection algorithms including Local Outlier Factor (LOF), KNN, Mahalanobis and Isolation Forest. 
+    The parameters for these algorithms can be set directly using the [pipeline_config] json file.
+     
+    **Example Selectors**
+    ```bash
+       spark-submit --class selector.workflows.ExampleSelector --master [master] [jar_file_path] --json [pipeline_config] --conf [project_config]
+    ```
+    **[pipeline_config]** Example in conf/selector_pipeline_example.json
+    
+    Example selector aims to select **the best** examples to label. Here is how it works. First, the user needs to specify the example sources.  
+    The example sources can be objects with top-ranked anomaly scores or one object from each k-means cluster. Then, the user will need to specify the
+    example selector applied on the selected sources. The example selector can be identity (output all selected objects) or a smarter selector based on 
+    similarities between selected objects and labeled objects. 
+    
+     
+    
