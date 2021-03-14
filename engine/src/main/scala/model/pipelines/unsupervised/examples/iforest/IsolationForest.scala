@@ -5,10 +5,7 @@ import model.common.SharedParams
 import model.pipelines.unsupervised.AbstractUnsupervisedAlgo
 import model.pipelines.tools.Converters
 import org.apache.log4j.Logger
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.sql.functions.typedLit
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable
 
@@ -79,7 +76,7 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
                 .coalesce(sharedParams.numPartitions)
         logger.info("Finish transforming on isolaiton forest models")
         // if saveToDB is set to true, save the results to Storage
-        if(sharedParams.saveToDB == true) {
+        if(sharedParams.saveToDB) {
             logger.info("Save model to Storage")
             SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
 //            results.write.mode(SaveMode.Overwrite).parquet(sharedParams.outputFilePath)
@@ -112,5 +109,5 @@ class IsolationForest(isolationForestParams: IsolationForestParams, stageNum: In
 }
 
 object IsolationForest{
-    val logger = Logger.getLogger(IsolationForest.getClass)
+    val logger: Logger = Logger.getLogger(IsolationForest.getClass)
 }

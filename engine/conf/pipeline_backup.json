@@ -1,0 +1,37 @@
+{
+  "labeledExamples": {
+    "name": "ReadLabeledExample",
+    "params": "data/kdd_09_labels.csv"
+  },
+  "sharedFilePath": "results/kdd_09_data_test_unsupervised_results",
+  "exampleSources": [
+    {
+      "name": "AnomalyScore",
+      "params": {
+        "inputColName": "iforest_result",
+        "bottomThres": 0.6,
+        "topThres": 1.0,
+        "usePercentile": false
+      }
+    },
+    {
+      "name": "KmeansClusters",
+      "params": {
+        "numExamplesFromEachCluster": 1,
+        "nClusters": 10,
+        "sortByDist": true
+      }
+    },
+    {
+      "name": "ActiveLearning",
+      "params":{
+
+      }
+    }
+  ],
+  "exampleSelector": {
+    "name": "KDDCupData"
+  },
+  "allExamplesOutputFileName": "all_examples_output",
+  "selectedExamplesOutputFileName": "selected_examples_output"
+}

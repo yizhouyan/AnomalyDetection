@@ -62,7 +62,7 @@ class StandardScaler(standardScalerParams: StandardScalerParams, stageNum: Int =
         sharedParams.columeTracking.addToFeatures(outputFeatureNames)
         // if saveToDB is set to true, save the results to Storage
         newDF = newDF.coalesce(sharedParams.numPartitions)
-        if(sharedParams.saveToDB == true){
+        if(sharedParams.saveToDB){
             SyncableDataFramePaths.setPath(newDF, sharedParams.outputFilePath)
             saveUnsupervisedToDB(this,
                 features,

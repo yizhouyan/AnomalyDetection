@@ -20,8 +20,8 @@ case class KNNBasedDetectionParams(kList: List[Int],
                                    useSubspace: Boolean,
                                    subspaceParams: Option[SubspaceParams],
                                    inputFeatureNames: Option[List[String]]=None){
-    require(kList.length > 0, "Must specify one k in the kList")
-    require(kList.filter(x => x > 0).length == kList.length, "K must be greater than one")
+    require(kList.nonEmpty, "Must specify one k in the kList")
+    require(kList.count(x => x > 0) == kList.length, "K must be greater than one")
 }
 
 /**

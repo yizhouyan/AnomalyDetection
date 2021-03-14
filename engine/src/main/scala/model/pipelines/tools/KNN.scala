@@ -1,5 +1,6 @@
 package model.pipelines.tools
 
+import breeze.linalg.max
 import org.apache.spark.ml.knn.{KNN, KNNModel}
 import org.apache.spark.sql.Dataset
 
@@ -14,8 +15,8 @@ object KNN {
         val knn = new KNN()
                 .setFeaturesCol(featureColName)
                 .setAuxCols(Array(indexColName))
-                .setTopTreeSize(data.count().toInt / 500)
-                .setK(k + 1)
+                .setTopTreeSize(max(1, data.count().toInt / 500))
+                .setK(k)
         val knnModel:KNNModel = knn.fit(data)
         knnModel.setDistanceCol("distances")
                 .transform(data).drop($"featureVec")

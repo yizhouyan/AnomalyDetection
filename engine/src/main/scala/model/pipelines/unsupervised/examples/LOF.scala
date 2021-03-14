@@ -23,8 +23,8 @@ case class LOFParams(kList: List[Int],
                      useSubspace: Boolean,
                      subspaceParams: Option[SubspaceParams],
                      inputFeatureNames: Option[List[String]]=None){
-    require(kList.length > 0, "Must specify one k in the kList")
-    require(kList.filter(x => x > 0).length == kList.length, "K must be greater than one")
+    require(kList.nonEmpty, "Must specify one k in the kList")
+    require(kList.count(x => x > 0) == kList.length, "K must be greater than one")
 }
 
 /**
@@ -115,7 +115,7 @@ class LOF(params: LOFParams, stageNum: Int = -1)
         sharedParams.columeTracking.addToResult(allOutputColNames.toList)
         results = results.coalesce(sharedParams.numPartitions)
         // if saveToDB is set to true, save the results to Storage
-        if(sharedParams.saveToDB == true){
+        if(sharedParams.saveToDB){
             logger.info("Save model to Storage")
             SyncableDataFramePaths.setPath(results, sharedParams.outputFilePath)
             saveUnsupervisedToDB(this,
@@ -151,5 +151,5 @@ class LOF(params: LOFParams, stageNum: Int = -1)
 }
 
 object LOF{
-    val logger = Logger.getLogger(LOF.getClass)
+    val logger: Logger = Logger.getLogger(LOF.getClass)
 }

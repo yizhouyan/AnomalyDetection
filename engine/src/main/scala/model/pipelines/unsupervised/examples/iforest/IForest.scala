@@ -1,6 +1,6 @@
 package model.pipelines.unsupervised.examples.iforest
 
-import model.common.{SharedParams}
+import model.common.SharedParams
 
 import scala.collection.mutable
 import scala.util.Random
@@ -139,7 +139,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             }.zipWithIndex().filter{ case (point: Vector, rowIndex: Long) =>
                 broadRowInfo.value.contains(rowIndex)
             }.flatMap { case (point: Vector, rowIndex: Long) =>
-                val numCopiesInEachTree = broadRowInfo.value.get(rowIndex).get.asInstanceOf[SparseVector]
+                val numCopiesInEachTree = broadRowInfo.value(rowIndex).asInstanceOf[SparseVector]
                 numCopiesInEachTree.indices.zip(numCopiesInEachTree.values).map {
                     case (treeId: Int, numCopies: Double) =>
                         (treeId, Array.fill(numCopies.toInt)(point))
@@ -256,11 +256,13 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
 
     /**
      * Calculate a path langth for a given feature set in a tree.
+     *
      * @param features A Vector stores feature values.
      * @param ifNode Tree's root node.
      * @param currentPathLength Current path length.
      * @return Path length in this tree.
      */
+    @scala.annotation.tailrec
     private def calPathLength(features: Vector,
                               ifNode: IFNode,
                               currentPathLength: Int): Double = ifNode match {
@@ -301,7 +303,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             val emptyList = List()
             val results = calPathLength(features, ifNode, 0, emptyList)
             val curScore = Math.pow(2, -results._1 / normFactor)
-            results._2.map(x => (importancePerTree(x) = curScore))
+            results._2.foreach(x => (importancePerTree(x) = curScore))
 //            println(importancePerTree.mkString(","))
             importancePerTree
         }).reduce((a,b) => {a.zip(b).map{case(x,y) => x+y}}).map(x => x / model.trees.length)
@@ -309,11 +311,13 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
 
     /**
      * Calculate a path length for a given feature set in a tree.
+ *
      * @param features A Vector stores feature values.
      * @param ifNode Tree's root node.
      * @param currentPathLength Current path length.
      * @return Path length in this tree.
      */
+    @scala.annotation.tailrec
     private def calPathLength(features: Vector,
                               ifNode: IFNode,
                               currentPathLength: Int,
@@ -356,7 +360,7 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
             (data.toArray.map(vector => vector.asInstanceOf[DenseVector].values), Array.range(0, numFeatures))
         } else {
             // feature index for sampling features
-            val featureIdx = random.shuffle[Int, IndexedSeq](0 to numFeatures - 1).take(subFeatures)
+            val featureIdx = random.shuffle[Int, IndexedSeq](0 until numFeatures).take(subFeatures)
 
             val sampledFeatures = mutable.ArrayBuilder.make[Array[Double]]
             data.foreach(vector => {
@@ -482,5 +486,5 @@ class IForest (params: IsolationForestParams, featuresCol: String="featureVec") 
 }
 
 object IForest{
-    val logger = Logger.getLogger(IForest.getClass)
+    val logger: Logger = Logger.getLogger(IForest.getClass)
 }
